@@ -19,7 +19,7 @@
 })();
 </script>
 <style>
-/* 淺色是預設值（不跟隨系統，除非使用者選「系統」） */
+/* 淺色的色票；預設 data-theme="system"，所以系統淺色時會落在這裡 */
 :root, :root[data-theme="light"]{
   --paper:#f7f4ee; --card:#fff; --ink:#1e1c19; --ink-soft:#6a655d;
   --line:#e3ddd2; --accent:#1b4965; --accent-soft:#e8eef3;
@@ -169,6 +169,23 @@ details>summary .n{
 .note-box p:last-child{margin:0}
 .note-box ul{margin:4px 0 0;padding-left:1.3em}
 
+/* ---- height table ---- */
+.ht{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 6px}
+.ht th{
+  text-align:left;font-size:11.5px;color:var(--ink-soft);font-weight:700;
+  padding:6px 4px;border-bottom:1px solid var(--line);
+}
+.ht td{padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ht tr:last-child td{border-bottom:0}
+.ht th.c,.ht td.c{text-align:center;width:46px}
+.ht td.lim{white-space:nowrap;color:var(--ink-soft);font-size:12.5px;width:1%}
+.ht .park{font-size:11.5px;color:var(--ink-soft)}
+.hgroup{
+  font-weight:700;font-size:13px;margin:14px 0 2px;padding:5px 9px;border-radius:8px;
+  background:var(--accent-soft);color:var(--accent);display:inline-block;
+}
+.hgroup.no{background:var(--warm-soft);color:var(--warm)}
+
 /* ---- overview table ---- */
 .ov{width:100%;border-collapse:collapse;font-size:14px}
 .ov td{padding:11px 4px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -225,8 +242,8 @@ const TRIP = [
           <tr><td class="d"><a href="#!d1">9/20 日</a></td><td><a href="#!d1"><b>抵達東京 · 豐洲 LaLaport</b><div class="h">三井花園飯店 豐洲普米爾</div></a></td></tr>
           <tr><td class="d"><a href="#!d2">9/21 一</a></td><td><a href="#!d2"><b>大宮 鐵道博物館</b><div class="h">三井花園飯店 豐洲普米爾</div></a></td></tr>
           <tr><td class="d"><a href="#!d3">9/22 二</a></td><td><a href="#!d3"><b>街區散步（三選一）</b><div class="h">清澄白河 / 藏前 / 二子玉川</div></a></td></tr>
-          <tr><td class="d"><a href="#!d4">9/23 三</a></td><td><a href="#!d4"><b>迪士尼海洋（半日）</b><div class="h">換住迪士尼樂園飯店</div></a></td></tr>
-          <tr><td class="d"><a href="#!d5">9/24 四</a></td><td><a href="#!d5"><b>迪士尼樂園（全日）</b><div class="h">迪士尼樂園飯店</div></a></td></tr>
+          <tr><td class="d"><a href="#!d4">9/23 三</a></td><td><a href="#!d4"><b>迪士尼海洋（半日）</b><div class="h">換住東京迪士尼樂園大飯店</div></a></td></tr>
+          <tr><td class="d"><a href="#!d5">9/24 四</a></td><td><a href="#!d5"><b>迪士尼樂園（全日）</b><div class="h">東京迪士尼樂園大飯店</div></a></td></tr>
           <tr><td class="d"><a href="#!d6">9/25 五</a></td><td><a href="#!d6"><b>返程</b><div class="h">12:30 租車前往機場 · 16:20 起飛</div></a></td></tr>
         </table>
       </div>
@@ -234,11 +251,17 @@ const TRIP = [
       <div class="note-box warm">
         <strong>⚠️ 出發前要確認的事</strong>
         <ul>
-          <li><b>迪士尼住哪一間飯店</b> — 大飯店 / 觀海景 / 大使，接駁與步行距離差很多</li>
-          <li><b>9/23 達菲秀餐廳的正式店名</b> — 好在 App 上找入口</li>
           <li><b>9/24 北齋 / Easter cafe 的時段</b> — 目前記錄是午晚各二選一</li>
           <li><b>Day 6 租車要不要提早</b> — 12:30 出發到成田只剩 2 小時 20 分，建議改 11:30–12:00</li>
+          <li><b>成田到豐洲要幾台車</b> — 兩家人加行李加兩台推車，一台普通計程車裝不下</li>
+          <li><b>B 小孩的裸足身高</b> — 90cm 是壓線，出門前量一次比較保險</li>
         </ul>
+      </div>
+
+      <div class="note-box">
+        <strong>👨‍👩‍👧 同行組成</strong>
+        <p>兩個家庭，各帶一位 3 歲小孩 — <b>A 小孩 98cm（裸足）</b>、<b>B 小孩 約 90cm</b>。各推一台推車。</p>
+        <p>迪士尼的身高門檻剛好卡在 90 / 102 / 117 三條線，對照表在下面那一欄。</p>
       </div>
 
       <div class="card">
@@ -270,47 +293,125 @@ const TRIP = [
       </div>
 
       <details>
-        <summary><span class="n">👶</span>推車與親子重點</summary>
+        <summary><span class="n">📏</span>身高對照表：98cm 和 90cm 能玩什麼</summary>
         <div class="dbody">
-          <p>這趟有一個 3 歲和一個未滿 1 歲，雙人推車是主要考量。</p>
-          <h4>地鐵</h4>
+          <p>兩個家庭各帶一位 3 歲：<b>A 小孩 98cm（裸足）</b>、<b>B 小孩 約 90cm</b>。迪士尼的門檻剛好卡在 90 / 102 / 117 三條線上，所以這張表很關鍵。</p>
+
+          <div class="note-box warm" style="margin:0 0 4px">
+            <strong>⚠️ B 小孩 90cm 是壓線</strong>
+            <p>身高是<b>在設施入口現場量</b>的，「約 90 公分」很可能量出來不到。90cm 那幾項先做好可能被擋下的心理準備，尤其不要在小孩面前先承諾。出門前在家用尺靠牆量一次裸足身高，心裡有數。</p>
+          </div>
+
+          <div class="hgroup">✅ 兩個都能玩（無身高限制）</div>
+          <p style="font-size:13.5px;margin:4px 0 0">
+            <b>樂園</b>：小小世界、幽靈公館、小熊維尼獵蜜記、怪獸電力公司、巴斯光年星際歷險、叢林巡航、旋轉木馬、小飛象、米奇公館、加勒比海盜<br>
+            <b>海洋</b>：玩具總動員瘋狂遊戲屋、辛巴達傳奇之旅、水上逗趣船、電氣軌道車、<b>安娜與艾莎的冰雪之旅</b>、<b>樂佩公主天燈盛會</b>、<b>奇妙仙子妙妙小車</b>
+          </p>
+          <p style="font-size:12.5px;color:var(--ink-soft);margin:6px 0 0">部分設施註明「需能自行坐穩」，3 歲通常沒問題。</p>
+
+          <div class="hgroup">⚠️ 90cm 以上 — A 可以，B 壓線</div>
+          <table class="ht">
+            <tr><th>設施</th><th class="c">98cm</th><th class="c">90cm</th></tr>
+            <tr><td>飛濺山 <span class="park">樂園</span></td><td class="c">✅</td><td class="c">⚠️</td></tr>
+            <tr><td>艾芝迷你雲霄飛車 <span class="park">樂園</span></td><td class="c">✅</td><td class="c">⚠️</td></tr>
+            <tr><td>海底巡遊艇 尼莫＆好友 <span class="park">海洋</span></td><td class="c">✅</td><td class="c">⚠️</td></tr>
+            <tr><td>小胖的飛魚雲霄飛車 <span class="park">海洋</span></td><td class="c">✅</td><td class="c">⚠️</td></tr>
+          </table>
+          <p style="font-size:12.5px;color:var(--ink-soft);margin:0">飛濺山有大落差，3 歲就算量過也可能被嚇到，自己評估。</p>
+
+          <div class="hgroup no">❌ 102cm 以上 — 兩個都不行</div>
+          <table class="ht">
+            <tr><td><b>小飛俠夢幻島歷險記</b> <span class="park">海洋 · 夢幻泉鄉</span></td><td class="lim">102cm</td></tr>
+            <tr><td>巨雷山 <span class="park">樂園</span></td><td class="lim">102cm</td></tr>
+            <tr><td>星際旅行：冒險續航 <span class="park">樂園</span></td><td class="lim">102cm</td></tr>
+            <tr><td>翱翔：夢幻奇航 <span class="park">海洋</span></td><td class="lim">102cm</td></tr>
+            <tr><td>驚魂古塔 <span class="park">海洋</span></td><td class="lim">102cm</td></tr>
+          </table>
+          <p style="font-size:12.5px;color:var(--ink-soft);margin:0">夢幻泉鄉四項設施裡，<b>只有小飛俠不能玩</b>，另外三項都可以，所以那區還是很值得去。</p>
+
+          <div class="hgroup no">❌ 117cm 以上 — 兩個都不行</div>
+          <table class="ht">
+            <tr><td>印第安納瓊斯冒險旅程 <span class="park">海洋</span></td><td class="lim">117cm</td></tr>
+            <tr><td>忿怒雙神 <span class="park">海洋</span></td><td class="lim">117cm</td></tr>
+            <tr><td>地心探險之旅 <span class="park">海洋</span></td><td class="lim">117cm</td></tr>
+          </table>
+
+          <h4>其他</h4>
           <ul>
-            <li>大江戶線、半藏門線、副都心線等較新的線電梯大、月台寬，轉乘輕鬆。</li>
-            <li>老站（銀座、東京、新宿）電梯遠又要繞，帶推車盡量避開當轉乘點。</li>
-            <li>出站前先查電梯出口編號，日本站內指標寫「エレベーター」。</li>
+            <li><b>太空山整修中</b>，預計 2027 年才重新開放，不用排進行程。</li>
+            <li>身高門檻官方隨時可能調整，<b>當天用官方 App 點進每個設施看</b>最準。</li>
+            <li>大人想玩身高不足的設施，用 <b>Rider Switch（交替搭乘）</b>：一位先玩、另一位顧小孩，換手時不用重新排隊。跟入口的工作人員說「Rider Switch（ライダースイッチ）」。</li>
           </ul>
-          <h4>票</h4>
+          <a class="map" target="_blank" rel="noopener" href="https://faq.tokyodisneyresort.jp/tdr/zh-tw/faq_detail.html?id=18513&category=29&page=1">📏 官方身高限制 FAQ</a>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="n">🎫</span>四種通行證與搶票策略（2026 現況）</summary>
+        <div class="dbody">
+          <p>制度這兩年改過，以下是目前的狀況。<b>夢幻泉鄉的預約等候卡（SP）已經在 2025 年 4 月取消</b>，現在可以自由進出、直接現場排隊。</p>
+
+          <h4>DPA · 迪士尼尊享卡（付費）</h4>
           <ul>
-            <li>6 歲以下不用票，可直接跟著大人刷卡進站。</li>
-            <li>Suica / PASMO 全程刷就好，JR 普通車不用劃位。</li>
+            <li>設施約 <b>¥1,500–2,000／人／次</b>，表演約 ¥2,500。</li>
+            <li>買了之後要等 <b>60 分鐘</b>，或前一張的指定時段到了，才能買下一張。</li>
+            <li><b>設施和表演的冷卻時間是分開算的</b>，可以同時各抓一張。</li>
           </ul>
-          <h4>迪士尼</h4>
+
+          <h4>PP · 優先入場卡（免費）</h4>
           <ul>
-            <li>推車可推進園區，遊樂設施旁有推車停放區；建議掛個好認的識別物。</li>
-            <li>嬰兒室（Baby Center）有熱水、尿布台、哺乳室，園內各區都有。</li>
+            <li>免費版快速通關，但<b>不是每天、每個設施都有</b>，入園後用 App 看當天有沒有開。</li>
+            <li>有開就一定要拿，等於省下 DPA 的錢。</li>
+          </ul>
+
+          <h4>SP · 預約等候卡（免費）</h4>
+          <ul>
+            <li>現在<b>沒有任何遊樂設施</b>用 SP，只剩部分熱門商店、餐廳會發。</li>
+            <li>人潮多才實施，而且隨時變動 — 行程表寫的「搶商店入場券」就是這個，<b>當天 App 上有才需要搶，沒有就直接進店</b>。</li>
+          </ul>
+
+          <h4>現場排隊</h4>
+          <ul>
+            <li>夢幻泉鄉四項現在都能現場排。開園衝第一波，等待時間最短。</li>
+          </ul>
+
+          <h4>進園前一晚要做的事</h4>
+          <ul>
+            <li>官方 App 更新好、登入好、<b>兩家人的票券都綁進去</b>（各自手機綁自己的，不要全綁一支，搶票才能分頭進行）。</li>
+            <li>確認手機有網路（漫遊或 eSIM）。園內 Wi-Fi 搶票時不穩。</li>
+            <li>先討論好 DPA 的第一順位，進閘門那一刻不要還在猶豫。</li>
+          </ul>
+
+          <h4>兩家人一起的分工建議</h4>
+          <ul>
+            <li>兩支手機分別搶不同設施的 DPA，成功率高一倍。</li>
+            <li>排長隊的設施一家先排、另一家帶兩個小孩去無限制的設施或遊樂區，輪流換手。</li>
           </ul>
         </div>
       </details>
 
       <details>
-        <summary><span class="n">🎢</span>迪士尼 DPA / Standby Pass 小抄</summary>
+        <summary><span class="n">👶</span>兩個 3 歲的親子重點</summary>
         <div class="dbody">
-          <p>兩天都要搶，時機比手速重要。</p>
-          <h4>進園前</h4>
+          <p>兩個家庭各帶一位 3 歲，各推一台推車。比雙人推車好走很多，但兩台車一起移動還是要留意電梯。</p>
+          <h4>地鐵</h4>
           <ul>
-            <li>前一晚就把東京迪士尼官方 App 更新好、登入好、票券綁好（全家人的都綁在同一支手機）。</li>
-            <li>確認手機有網路（漫遊或 eSIM）。園內 Wi-Fi 搶票時不穩。</li>
+            <li>大江戶線、半藏門線、副都心線等較新的線電梯大、月台寬，兩台推車轉乘輕鬆。</li>
+            <li>老站（銀座、東京、新宿）電梯遠又要繞，帶推車盡量避開當轉乘點。</li>
+            <li>電梯一次通常只容得下一台推車＋大人，兩家人要分兩趟，先約好在哪一層集合。</li>
+            <li>出站前先查電梯出口編號，日本站內指標寫「エレベーター」。</li>
           </ul>
-          <h4>入園後</h4>
+          <h4>票</h4>
           <ul>
-            <li><b>DPA（付費，一次一張）</b>：進閘門後立刻開搶。9/23 目標是冰雪奇緣或 Toy Story；9/24 是白天的 show。</li>
-            <li><b>Standby Pass（免費）</b>：搶商店入場券，熱門商店（尤其達菲周邊）沒券進不去。</li>
-            <li>一張用掉（或時段過了）才能抽下一張，所以排序要先想好。</li>
+            <li>3 歲不用票（未滿 6 歲免費），跟著大人刷卡進站就好。</li>
+            <li>Suica / PASMO 全程刷，JR 普通車不用劃位。</li>
           </ul>
-          <h4>帶小孩的取捨</h4>
+          <h4>迪士尼</h4>
           <ul>
-            <li>3 歲有身高限制的設施進不去，DPA 優先給「全家都能上」或「show」比較划算。</li>
-            <li>善用 Rider Switch（輪流照顧小孩，第二位大人不用重排）。</li>
+            <li><b>園內可以租推車，¥1,000／日</b>，限身高 100cm 以下、體重 15kg 以內 — 兩個小孩都符合。從飯店走過去不想推的話可以租。</li>
+            <li>自己的推車也能推進園區，設施旁有停放區；掛個好認的識別物，同款推車很多。</li>
+            <li>Baby Center（嬰兒中心）有熱水、尿布台、微波爐，兩園各區都有。</li>
+            <li>3 歲的體力大概撐到下午就要休息，住園區飯店的好處就是能回房睡一下再出來。</li>
           </ul>
         </div>
       </details>
@@ -335,7 +436,7 @@ const TRIP = [
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">計程車 → 飯店</div>
-          <div class="note">成田到豐洲車程約 70–90 分鐘，帶雙人推車＋行李最省力，但車資不便宜（含高速費大約 ¥25,000–30,000，請現場確認）。<br>
+          <div class="note">成田到豐洲車程約 70–90 分鐘，帶小孩＋行李最省力，但車資不便宜（含高速費大約 ¥25,000–30,000，請現場確認）。<br>
           想省錢的話：<b>成田特快 N'EX</b> 到東京站（約 55 分鐘，車廂有行李架）再轉計程車到豐洲約 20 分鐘。</div>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
@@ -449,7 +550,7 @@ const TRIP = [
           <p>原本是安靜的下町住宅區，現在進駐了幾十家極具設計感的獨立咖啡廳與雜貨店。想看現代、文青、舒服的東京街道就是這裡。</p>
           <h4>🚇 怎麼去</h4>
           <p>豐洲站搭<b>有樂町線</b> 1 站到<b>月島站</b>，原站轉<b>大江戶線</b> 2 站（門前仲町 → 清澄白河）就到<b>清澄白河站</b>，全程約 15 分鐘。</p>
-          <p><span class="tag stroll">推車友善</span>月島和大江戶線都是相對新、規劃很好的車站，電梯超級大，推兩台車轉乘完全無壓力。</p>
+          <p><span class="tag stroll">推車友善</span>月島和大江戶線都是相對新、規劃很好的車站，電梯超級大，兩台推車轉乘完全無壓力。</p>
           <h4>☕ 大人</h4>
           <ul>
             <li><b>Blue Bottle Coffee 日本旗艦店</b>就在這，店內挑高極高、空間超大，推車進去喝杯手沖非常舒服。</li>
@@ -479,7 +580,7 @@ const TRIP = [
           <p>就在淺草的隔壁站，但氣氛跟淺草完全不同。以前是傳統皮革和玩具批發的小街，現在轉型成全東京最紅的「職人選物與獨立咖啡街」，街頭巷尾充滿驚喜。</p>
           <h4>🚇 怎麼去</h4>
           <p>豐洲站搭<b>有樂町線</b> 2 站到<b>新富町站</b>，走路轉<b>東銀座站</b>，搭<b>淺草線</b>直達<b>藏前站</b>。</p>
-          <p><span class="tag check">注意</span>新富町 → 東銀座是<b>站外步行</b>轉乘（約 5 分鐘），帶雙人推車要走一段地面。不想走的話可以改從豐洲搭計程車直接過去，車程約 20 分鐘。</p>
+          <p><span class="tag check">注意</span>新富町 → 東銀座是<b>站外步行</b>轉乘（約 5 分鐘），帶兩台推車要走一段地面。不想走的話可以改從豐洲搭計程車直接過去，車程約 20 分鐘。</p>
           <h4>☕ 大人</h4>
           <ul>
             <li>街道非常安靜，像在歐洲小鎮。</li>
@@ -488,7 +589,7 @@ const TRIP = [
           </ul>
           <h4>👶 小孩</h4>
           <ul>
-            <li><b>隅田川露台步道</b>（隅田川テラス / Sumida River Terrace）規劃了完美的無障礙坡道，可以推著雙人推車沿著河岸散步，迎面就是巨大的晴空塔（東京スカイツリー / Tokyo Skytree），拍照超漂亮。</li>
+            <li><b>隅田川露台步道</b>（隅田川テラス / Sumida River Terrace）規劃了完美的無障礙坡道，可以推著推車沿著河岸散步，迎面就是巨大的晴空塔（東京スカイツリー / Tokyo Skytree），拍照超漂亮。</li>
             <li>鄰近淺草，新大樓和咖啡廳對嬰兒車都很習慣，沿途也有不少社區小公園有溜滑梯。</li>
           </ul>
           <h4>🔗 連結</h4>
@@ -516,7 +617,7 @@ const TRIP = [
           <ul>
             <li>商場二樓有設計完美的空中綠色步道，一整路都是平地，完全沒有階梯。順著走 10 分鐘就到<b>二子玉川公園</b>。</li>
             <li>公園內有大片面向多摩川的草皮，<b>可以看到電車過鐵橋</b>，3 歲鐵道迷會瘋狂。</li>
-            <li>還有幼兒專屬的遊樂場，不到 1 歲的寶寶也可以坐在野餐墊上吹風。</li>
+            <li>還有幼兒專屬的遊樂場，兩個 3 歲可以一起放電，大人在野餐墊上休息。</li>
           </ul>
           <h4>🔗 連結</h4>
           <p style="margin:0">
@@ -531,7 +632,7 @@ const TRIP = [
       <div class="note-box warm">
         <strong>🤔 如果要我選</strong>
         <p><b>清澄白河</b>。轉乘最輕鬆（15 分鐘、電梯大）、咖啡庭園遊樂場全在走路範圍內，而且 Day 2 已經玩了一整天鐵道，換個口味剛好。</p>
-        <p>如果 3 歲還想看電車，<b>二子玉川</b>的高架電車＋草皮看電車過橋無人能敵，代價是單程 45 分鐘。<b>藏前</b>景色最美但要站外步行轉乘，雙人推車最累。</p>
+        <p>如果兩個 3 歲都愛電車，<b>二子玉川</b>的高架電車＋草皮看電車過橋無人能敵，代價是單程 45 分鐘。<b>藏前</b>景色最美但要站外步行轉乘，帶兩台推車最累。</p>
       </div>
     `
   },
@@ -540,17 +641,17 @@ const TRIP = [
   {
     id:"d4", tab:"9/23", tabSub:"Day 4", dow:"三", date:"2026-09-23",
     title:"迪士尼海洋（半日）",
-    meta:"住：迪士尼樂園飯店（換飯店）",
+    meta:"住：東京迪士尼樂園大飯店（換飯店）",
     html:`
       <ul class="tl">
         <li><div class="time blank">上午</div><div class="body">
           <div class="what">豐洲退房 → 移動到舞濱</div>
           <div class="note">建議：豐洲搭<b>有樂町線</b> 2 站到<b>新木場</b>，轉 <b>JR 京葉線</b>到<b>舞濱</b>，約 20 分鐘就到。<br>
-          帶大行李＋雙人推車的話，計程車直送飯店會輕鬆很多（約 30 分鐘）。</div>
+          兩家人帶大行李＋兩台推車，計程車直送飯店會輕鬆很多（約 30 分鐘），但同樣要叫大型車或兩台。</div>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">飯店寄放行李</div>
-          <div class="note">先把行李丟給飯店（不用等到 check-in 時間），人直接進園。<span class="tag check">確認是哪一間飯店</span></div>
+          <div class="note">先把行李丟給東京迪士尼樂園大飯店（不用等到 check-in 時間），人直接進園。飯店就在舞濱站對面、正對樂園入口。</div>
         </div></li>
         <li><div class="time blank">中午</div><div class="body">
           <div class="what">東京迪士尼海洋 · 半日遊</div>
@@ -560,19 +661,32 @@ const TRIP = [
           <a class="map" target="_blank" rel="noopener" href="https://www.tokyodisneyresort.jp/">🏰 度假區官網</a>
         </div></li>
         <li><div class="time">19:15</div><div class="body">
-          <div class="what">晚餐 · 達菲秀餐廳</div>
-          <div class="note"><span class="tag book">已訂位</span>有達菲秀的餐廳，建議提早 20 分鐘到。<span class="tag check">確認正式店名</span></div>
+          <div class="what">晚餐 · 達菲與好友的非凡友誼（秀餐廳）</div>
+          <div class="note"><span class="tag book">已訂位</span>
+          店名是<b>鱈魚岬錦標美食</b>（ケープコッド・クックオフ / Cape Cod Cook-Off），在<b>美國海濱</b>區，不是地平線灣餐廳。<br>
+          全長約 65 分鐘：先用餐，後段約 20 分鐘是達菲的秀。建議提早 20 分鐘到。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('ケープコッド・クックオフ 東京ディズニーシー')}">🗺 地圖</a>
         </div></li>
       </ul>
 
       <div class="card">
         <h3>🎯 進園後的搶票順序</h3>
         <ol>
-          <li><b>DPA</b> — 冰雪奇緣 或 Toy Story。只能先抽一個，先決定好要哪個再開 App。</li>
-          <li><b>Standby Pass</b> — 商店入場券（達菲周邊的商店沒券進不去）。</li>
-          <li>抽完再看表演的抽選。</li>
+          <li><b>DPA</b> — 建議<b>安娜與艾莎的冰雪之旅</b>（夢幻泉鄉，兩個小孩都沒有身高限制）或 <b>Toy Story 瘋狂遊戲屋</b>。兩支手機分頭搶不同設施。</li>
+          <li><b>PP（免費優先入場卡）</b> — 用 App 看當天有沒有開，有開就先拿，可以省下 DPA 的錢。</li>
+          <li><b>SP（預約等候卡）</b> — 現在只有部分熱門商店會發，人潮多才實施。App 上有才需要搶，沒有就直接進店。</li>
         </ol>
+        <div class="note-box warm" style="margin:12px 0 0">
+          <strong>⚠️ 別排小飛俠</strong>
+          <p>夢幻泉鄉的<b>小飛俠夢幻島歷險記身高限制 102cm</b>，兩個小孩都上不了，DPA 不要浪費在這項。另外三項（冰雪之旅、樂佩天燈盛會、奇妙仙子妙妙小車）都能玩。</p>
+        </div>
         <p style="margin-top:10px">半日遊時間很緊，DPA 的時段要挑在晚餐 19:15 之前，不要撞到。</p>
+      </div>
+
+      <div class="note-box">
+        <strong>🆕 夢幻泉鄉現在可以自由進出</strong>
+        <p>原本要抽預約等候卡（SP）才能進夢幻泉鄉，<b>2025 年 4 月已經取消</b>。現在隨時可以進去逛、拍艾莎冰雪城堡和虎克船長海盜船，四項設施都能現場排隊，或買 DPA（約 ¥2,000／人／項）。</p>
+        <p>開園衝第一波等待時間最短 — 但今天是半日遊，中午才進園，人已經多了，心裡有個底。</p>
       </div>
 
       <div class="note-box warm">
@@ -590,7 +704,7 @@ const TRIP = [
   {
     id:"d5", tab:"9/24", tabSub:"Day 5", dow:"四", date:"2026-09-24",
     title:"迪士尼樂園（全日）",
-    meta:"住：迪士尼樂園飯店",
+    meta:"住：東京迪士尼樂園大飯店",
     html:`
       <ul class="tl">
         <li><div class="time blank">提早</div><div class="body">
@@ -601,7 +715,7 @@ const TRIP = [
         </div></li>
         <li><div class="time blank">入園</div><div class="body">
           <div class="what">開搶</div>
-          <div class="note"><b>DPA</b> 搶白天的 show；<b>Standby Pass</b> 搶商店入場券。</div>
+          <div class="note"><b>DPA</b> 搶白天的 show（表演約 ¥2,500／人，和設施的冷卻時間分開算，可以同時各抓一張）；<b>PP</b> 看當天有沒有開；<b>SP</b> 只有部分商店會發。</div>
         </div></li>
         <li><div class="time">11:30</div><div class="body">
           <div class="what">午餐 · 北齋</div>
@@ -627,9 +741,17 @@ const TRIP = [
         </div></li>
       </ul>
 
+      <div class="card">
+        <h3>🎠 今天兩個小孩玩得到的</h3>
+        <p><b>不用量身高，直接排：</b>小小世界、小熊維尼獵蜜記、怪獸電力公司、巴斯光年星際歷險、幽靈公館、叢林巡航、加勒比海盜、旋轉木馬、小飛象、米奇公館與好友小屋。</p>
+        <p><b>要量身高（90cm 以上）：</b>飛濺山、艾芝迷你雲霄飛車 — A 小孩 98cm 沒問題，B 小孩約 90cm 壓線。</p>
+        <p style="margin-bottom:0"><b>今天不用排：</b>巨雷山、星際旅行（都要 102cm）；太空山整修到 2027 年。</p>
+      </div>
+
       <div class="note-box">
         <strong>💡 餐廳時段</strong>
         <p>行程表記的是午餐（11:30 北齋 / 11:50 Easter cafe）和晚餐（16:20 北齋 / 17:50 Easter cafe）各二選一。出發前確認一下實際訂了哪幾個，訂位資訊在手機速查裡。</p>
+        <p>訂位人數記得把兩個小孩算進去（3 歲一般要佔位）。</p>
       </div>
 
       <div class="note-box warm">
