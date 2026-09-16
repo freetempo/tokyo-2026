@@ -217,15 +217,19 @@ details>summary .n{
 }
 .sgroup h3 span{font-weight:400;opacity:.75}
 .slist{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.shop{display:flex;gap:10px;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.shop{display:flex;gap:4px;align-items:flex-start;padding:10px 12px 10px 4px;border-bottom:1px solid var(--line)}
 .shop:last-child{border-bottom:0}
-.shop:active{background:var(--accent-soft)}
-.shop .nm{flex:1 1 auto;min-width:0;font-weight:700;font-size:15px;word-break:break-word}
-.shop .ct{flex:0 0 auto;font-size:11.5px;color:var(--ink-soft);text-align:right;max-width:38%}
+.fav{
+  flex:0 0 auto;border:0;background:none;cursor:pointer;padding:6px 8px;
+  font-size:19px;line-height:1.2;color:var(--ink-soft);
+}
+.fav[aria-pressed="true"]{color:#e8a33d}
+.fav:active{transform:scale(.88)}
+.shop .slink{flex:1 1 auto;min-width:0;text-decoration:none;color:inherit;padding:4px 0}
+.shop .nm{font-weight:700;font-size:15px;word-break:break-word}
+.shop .ct{flex:0 0 auto;font-size:11.5px;color:var(--ink-soft);text-align:right;max-width:34%;padding-top:6px}
 .shop .fl{display:block;font-size:11.5px;color:var(--ink-soft);font-weight:400;margin-top:2px}
 .shop .en{font-weight:400;font-size:13px;color:var(--ink-soft)}
-.shop.star{background:var(--warm-soft)}
-.shop.star .nm::before{content:"⭐ "}
 .shop .why{display:block;font-size:12px;color:var(--warm);font-weight:700;margin-top:3px}
 .empty{padding:28px 4px;text-align:center;color:var(--ink-soft);font-size:14px}
 
@@ -1290,6 +1294,25 @@ const Shops = (function () {
   let loc = '';
   let onlyStar = false;
   let els = null;
+  let favs = new Set();          // 收藏的店家 id
+
+  const FAV_KEY = 'shopFavs';
+
+  function loadFavs() {
+    let raw = null;
+    try { raw = localStorage.getItem(FAV_KEY); } catch (e) {}
+    if (raw === null) {
+      /* 第一次使用：先把行程上會用到的四家放進收藏 */
+      favs = new Set(SHOPS.filter(s => s.star).map(s => s.id));
+      saveFavs();
+      return;
+    }
+    try { favs = new Set(JSON.parse(raw)); } catch (e) { favs = new Set(); }
+  }
+
+  function saveFavs() {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify([...favs])); } catch (e) {}
+  }
 
   /* 搜尋用的正規化：全形英數→半形、片假名→平假名、去掉中黑點與空白 */
   function norm(s) {
@@ -1324,8 +1347,7 @@ const Shops = (function () {
 
   function renderChips() {
     els.cats.textContent = '';
-    const nStar = SHOPS.filter(s => s.star).length;
-    els.cats.appendChild(chip(`⭐ 行程相關 ${nStar}`, onlyStar,
+    els.cats.appendChild(chip(`★ 星號 ${favs.size}`, onlyStar,
       () => { onlyStar = !onlyStar; render(); }));
     els.cats.appendChild(chip('全部類別', cat === '' && !onlyStar,
       () => { cat = ''; onlyStar = false; render(); }));
@@ -1349,8 +1371,29 @@ const Shops = (function () {
     const box = document.createElement('div');
     box.className = 'slist';
     rows.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'shop';
+
+      /* 星號：按了加入／移出收藏，記在這支手機的 localStorage */
+      const fav = document.createElement('button');
+      fav.className = 'fav';
+      const paint = () => {
+        const on = favs.has(s.id);
+        fav.textContent = on ? '★' : '☆';
+        fav.setAttribute('aria-pressed', on ? 'true' : 'false');
+        fav.title = on ? '移出星號' : '加入星號';
+      };
+      paint();
+      fav.onclick = () => {
+        if (favs.has(s.id)) favs.delete(s.id); else favs.add(s.id);
+        saveFavs();
+        paint();
+        renderChips();
+        if (onlyStar) render();   // 正在只看星號時，取消的那家要消失
+      };
+
       const a = document.createElement('a');
-      a.className = 'shop' + (s.star ? ' star' : '');
+      a.className = 'slink';
       if (s.url) { a.href = s.url; a.target = '_blank'; a.rel = 'noopener'; }
 
       const nm = document.createElement('div');
@@ -1379,8 +1422,9 @@ const Shops = (function () {
       ct.className = 'ct';
       ct.textContent = s.catRaw || s.cat;
 
-      a.append(nm, ct);
-      box.appendChild(a);
+      a.appendChild(nm);
+      row.append(fav, a, ct);
+      box.appendChild(row);
     });
     return box;
   }
@@ -1389,7 +1433,7 @@ const Shops = (function () {
     const raw = els.q.value;
     const q = norm(raw);
     let rows = SHOPS.filter(s =>
-      (!onlyStar || s.star) &&
+      (!onlyStar || favs.has(s.id)) &&
       (!cat || s.cat === cat) &&
       (!loc || locKey(s) === loc) &&
       (!q || norm(s.s || s.name).includes(q) || norm(s.cat).includes(q))
@@ -1494,6 +1538,7 @@ const Shops = (function () {
       return;
     }
     SHOPS = data.shops;
+    loadFavs();
     render();
   }
 

@@ -330,7 +330,9 @@ def main() -> int:
         en = EN.get(name, "")
         search = " ".join(filter(None, [name, en, to_romaji(name), alias, cat_raw]))
 
+        sid = re.search(r"/(\d+)\.html", href.group(1)).group(1) if href else name
         shops.append({
+            "id": sid,
             "name": name,
             "cat": CAT_MAP.get(cat_raw.split("/")[0], "服務・其他"),
             "catRaw": cat_raw,
