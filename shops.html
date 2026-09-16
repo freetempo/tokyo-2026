@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LaLaport 豐洲 店家清單 · 2026 東京</title>
+<meta name="theme-color" content="#1b4965">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="豐洲店家">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<script>
+/* 跟行程頁共用同一個 theme 設定 */
+(function(){
+  var t = "system";
+  try { t = localStorage.getItem("theme") || "system"; } catch (e) {}
+  document.documentElement.dataset.theme = t;
+})();
+</script>
+<style>
+:root, :root[data-theme="light"]{
+  --paper:#f7f4ee; --card:#fff; --ink:#1e1c19; --ink-soft:#6a655d;
+  --line:#e3ddd2; --accent:#1b4965; --accent-soft:#e8eef3;
+  --warm:#c1502e; --warm-soft:#fbeae4; --good:#3f7d52; --good-soft:#e8f1ea;
+  --shadow:0 1px 2px rgba(31,29,26,.06),0 4px 14px rgba(31,29,26,.05);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --paper:#16151a; --card:#1f1e24; --ink:#eceae5; --ink-soft:#a09a90;
+  --line:#332f38; --accent:#7fb3d3; --accent-soft:#1e2a33;
+  --warm:#e88a68; --warm-soft:#33211b; --good:#7fba92; --good-soft:#1c2a20;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+:root[data-theme="system"]{color-scheme:light dark}
+@media (prefers-color-scheme:dark){
+  :root[data-theme="system"]{
+    --paper:#16151a; --card:#1f1e24; --ink:#eceae5; --ink-soft:#a09a90;
+    --line:#332f38; --accent:#7fb3d3; --accent-soft:#1e2a33;
+    --warm:#e88a68; --warm-soft:#33211b; --good:#7fba92; --good-soft:#1c2a20;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Hiragino Sans",sans-serif;
+  -webkit-text-size-adjust:100%; padding:0 0 64px;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+header{padding:24px 0 6px}
+.hrow{display:flex;align-items:flex-start;gap:12px}
+.hrow>div{flex:1 1 auto;min-width:0}
+h1{font-size:22px;line-height:1.3;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--ink-soft);font-size:13.5px;margin:0}
+.back{
+  display:inline-block;margin:10px 0 0;font-size:13px;font-weight:700;text-decoration:none;
+  color:var(--accent);border:1px solid var(--line);border-radius:9px;padding:5px 11px;background:var(--card);
+}
+.themebtn{
+  flex:0 0 auto;margin-top:2px;border:1px solid var(--line);background:var(--card);
+  color:var(--ink-soft);border-radius:11px;padding:7px 11px;font:inherit;font-size:13px;
+  font-weight:700;cursor:pointer;line-height:1.3;white-space:nowrap;box-shadow:var(--shadow);
+}
+
+/* ---- 搜尋列（吸頂） ---- */
+.tools{
+  position:sticky;top:0;z-index:20;background:var(--paper);
+  padding:12px 0 8px;margin:14px 0 0;border-bottom:1px solid var(--line);
+}
+.searchrow{display:flex;gap:8px;align-items:center}
+#q{
+  flex:1 1 auto;min-width:0;font:inherit;font-size:16px;
+  padding:11px 13px;border:1px solid var(--line);border-radius:11px;
+  background:var(--card);color:var(--ink);
+}
+#q:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.clear{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  border-radius:11px;padding:10px 12px;font:inherit;font-size:14px;cursor:pointer;
+}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:9px 0 2px;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;
+}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.count{font-size:13px;color:var(--ink-soft);padding:6px 0 0}
+
+/* ---- 清單 ---- */
+.group{margin:20px 0 0}
+.group h2{
+  font-size:14px;margin:0 0 8px;color:var(--accent);
+  background:var(--accent-soft);display:inline-block;padding:5px 11px;border-radius:9px;
+}
+.group h2 span{font-weight:400;opacity:.75}
+.list{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.shop{display:flex;gap:10px;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.shop:last-child{border-bottom:0}
+.shop:active{background:var(--accent-soft)}
+.shop .nm{flex:1 1 auto;min-width:0;font-weight:700;font-size:15px;word-break:break-word}
+.shop .ct{flex:0 0 auto;font-size:11.5px;color:var(--ink-soft);text-align:right;max-width:38%}
+.shop .fl{display:block;font-size:11.5px;color:var(--ink-soft);font-weight:400;margin-top:2px}
+.shop.star{background:var(--warm-soft)}
+.shop.star .nm::before{content:"⭐ "}
+.shop .why{display:block;font-size:12px;color:var(--warm);font-weight:700;margin-top:3px}
+
+.note-box{background:var(--accent-soft);border-radius:12px;padding:13px 15px;margin:14px 0 0;font-size:14px;line-height:1.65}
+.note-box.warm{background:var(--warm-soft)}
+.note-box strong{display:block;margin-bottom:3px}
+.note-box p{margin:0 0 6px}
+.note-box p:last-child{margin:0}
+.empty{padding:28px 4px;text-align:center;color:var(--ink-soft);font-size:14px}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-soft)}
+footer a{color:var(--accent)}
+.top{
+  position:fixed;right:16px;bottom:16px;width:44px;height:44px;border-radius:50%;
+  background:var(--accent);color:#fff;border:0;font-size:18px;box-shadow:var(--shadow);
+  display:none;place-items:center;cursor:pointer;z-index:30;
+}
+.top.show{display:grid}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="hrow">
+      <div>
+        <h1>LaLaport 豐洲 店家清單</h1>
+        <p class="sub">アーバンドック ららぽーと豊洲 · 全 <b id="total">–</b> 家</p>
+      </div>
+      <button class="themebtn" id="theme" aria-label="切換深淺色"></button>
+    </div>
+    <a class="back" href="index.html">← 回行程</a>
+  </header>
+
+  <div class="tools">
+    <div class="searchrow">
+      <input id="q" type="search" inputmode="search" autocomplete="off"
+             placeholder="搜尋店名或類別（中日文皆可）" aria-label="搜尋店家">
+      <button class="clear" id="clear" aria-label="清除">✕</button>
+    </div>
+    <div class="chips" id="cats"></div>
+    <div class="chips" id="locs"></div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <main id="out"></main>
+
+  <div class="note-box warm" id="tips">
+    <strong>🛒 行程上會用到的四家（清單裡標 ⭐）</strong>
+    <p><b>アカチャンホンポ</b>（買 Cybex Melio）和 <b>ババ・ガンプ・シュリンプ</b>（Day 1 晚餐）
+    <b>都在 豊洲1 NORTH PORT 3F</b> — 同一層樓，買完推車走幾步就吃飯。</p>
+    <p><b>ALOHA TABLE</b>（Day 2 晚餐）和備案 <b>Royal Garden Cafe&amp;TAVERN</b>
+    <b>都在 豊洲3 1F</b> — 也在同一層，臨時要換很方便。</p>
+  </div>
+
+  <div class="note-box">
+    <strong>🏢 LaLaport 豐洲分成三棟</strong>
+    <p><b>豊洲1</b>　主館，分 NORTH / CENTER / SOUTH PORT 三區，各 1–3F，店最多。<br>
+    <b>豊洲2</b>　1–2F，店少。<br>
+    <b>豊洲3</b>　B1–4F，餐廳集中在 1F、超市等在 B1。</p>
+    <p style="margin-top:6px">有幾個店名會出現多次，那是真的有多處：<b>セブン銀行ATM</b> 五個樓層各一台、
+    <b>ZARA</b> 跨 1F 與 2F、<b>フレッシュネスバーガー</b> 有獨立店與美食廣場店。</p>
+  </div>
+
+  <footer>
+    <p>資料抓自
+      <a target="_blank" rel="noopener" href="https://mitsui-shopping-park.com/lalaport/toyosu/shopguide/">三井購物公園官方店家一覽</a>，
+      點店名可開官方頁看營業時間。店家會變動，以現場與官網為準。</p>
+    <p>要更新清單：在 repo 裡跑 <code>python3 tools/fetch-shops.py</code> 再跑 <code>python3 tools/build-sw.py</code>。</p>
+  </footer>
+</div>
+<button class="top" id="top" aria-label="回到頂端">↑</button>
+
+<script>
+const CATS = ['美食', '服飾', '居家雜貨', '服務・其他'];
+const LOC_ORDER = [
+  '豊洲1 NORTH PORT', '豊洲1 CENTER PORT', '豊洲1 SOUTH PORT',
+  '豊洲2', '豊洲3'
+];
+const FLOORS = ['B1', '1F', '2F', '3F', '4F'];
+
+let SHOPS = [];
+let cat = '';   // '' = 全部
+let loc = '';
+
+/* 搜尋用的正規化，讓日文店名好打一點：
+   - 小寫、去掉中黑點與空白
+   - 全形英數 → 半形
+   - 片假名 → 平假名（打哪一種都找得到）
+   - 長音符與濁點的變體統一 */
+function norm(s) {
+  return (s || '')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[ｰ―－—]/g, 'ー')
+    .toLowerCase()
+    .replace(/[・･\s　]/g, '');
+}
+
+const out = document.getElementById('out');
+const qEl = document.getElementById('q');
+const countEl = document.getElementById('count');
+
+function locKey(s) {
+  return (s.bld + (s.zone ? ' ' + s.zone : '')).trim();
+}
+
+function chip(label, on, onclick) {
+  const b = document.createElement('button');
+  b.className = 'chip' + (on ? ' on' : '');
+  b.textContent = label;
+  b.onclick = onclick;
+  return b;
+}
+
+function renderChips() {
+  const cs = document.getElementById('cats');
+  cs.textContent = '';
+  cs.appendChild(chip('全部類別', cat === '', () => { cat = ''; render(); }));
+  CATS.forEach(c => {
+    const n = SHOPS.filter(s => s.cat === c).length;
+    if (!n) return;
+    cs.appendChild(chip(`${c} ${n}`, cat === c, () => { cat = cat === c ? '' : c; render(); }));
+  });
+
+  const ls = document.getElementById('locs');
+  ls.textContent = '';
+  ls.appendChild(chip('全部區域', loc === '', () => { loc = ''; render(); }));
+  LOC_ORDER.forEach(k => {
+    const n = SHOPS.filter(s => locKey(s) === k).length;
+    if (!n) return;
+    const short = k.replace('豊洲1 ', '').replace(' PORT', '');
+    ls.appendChild(chip(`${short} ${n}`, loc === k, () => { loc = loc === k ? '' : k; render(); }));
+  });
+}
+
+function render() {
+  const q = norm(qEl.value);
+  let rows = SHOPS.filter(s =>
+    (!cat || s.cat === cat) &&
+    (!loc || locKey(s) === loc) &&
+    (!q || norm(s.name).includes(q) || norm(s.catRaw).includes(q) || norm(s.cat).includes(q))
+  );
+
+  renderChips();
+  countEl.textContent = `顯示 ${rows.length} / ${SHOPS.length} 家`
+    + (q ? `　搜尋「${qEl.value.trim()}」` : '');
+
+  out.textContent = '';
+  if (!rows.length) {
+    const d = document.createElement('div');
+    d.className = 'empty';
+    d.textContent = '沒有符合的店家。換個關鍵字，或把篩選清掉。';
+    out.appendChild(d);
+    return;
+  }
+
+  /* 有搜尋字就攤平成一張清單（跨樓層找店比較快）；否則按區域＋樓層分組 */
+  if (q) {
+    out.appendChild(makeList(rows, true));
+    return;
+  }
+
+  const seen = new Map();
+  rows.forEach(s => {
+    const k = locKey(s) + '｜' + (s.floor || '其他');
+    if (!seen.has(k)) seen.set(k, []);
+    seen.get(k).push(s);
+  });
+
+  const keys = [...seen.keys()].sort((a, b) => {
+    const [la, fa] = a.split('｜'), [lb, fb] = b.split('｜');
+    const oa = LOC_ORDER.indexOf(la), ob = LOC_ORDER.indexOf(lb);
+    if (oa !== ob) return (oa < 0 ? 99 : oa) - (ob < 0 ? 99 : ob);
+    return (FLOORS.indexOf(fa) < 0 ? 99 : FLOORS.indexOf(fa))
+         - (FLOORS.indexOf(fb) < 0 ? 99 : FLOORS.indexOf(fb));
+  });
+
+  keys.forEach(k => {
+    const [l, f] = k.split('｜');
+    const g = document.createElement('section');
+    g.className = 'group';
+    const h = document.createElement('h2');
+    h.innerHTML = `${l} ${f} <span>· ${seen.get(k).length} 家</span>`;
+    g.appendChild(h);
+    g.appendChild(makeList(seen.get(k), false));
+    out.appendChild(g);
+  });
+}
+
+function makeList(rows, showLoc) {
+  const ul = document.createElement('div');
+  ul.className = 'list';
+  rows.forEach(s => {
+    const a = document.createElement('a');
+    a.className = 'shop' + (s.star ? ' star' : '');
+    if (s.url) { a.href = s.url; a.target = '_blank'; a.rel = 'noopener'; }
+
+    const nm = document.createElement('div');
+    nm.className = 'nm';
+    nm.textContent = s.name;
+    if (showLoc) {
+      const fl = document.createElement('span');
+      fl.className = 'fl';
+      fl.textContent = `${locKey(s)} ${s.floor}`.trim() || '位置未標示';
+      nm.appendChild(fl);
+    }
+    if (s.star) {
+      const why = document.createElement('span');
+      why.className = 'why';
+      why.textContent = s.star;
+      nm.appendChild(why);
+    }
+
+    const ct = document.createElement('div');
+    ct.className = 'ct';
+    ct.textContent = s.catRaw || s.cat;
+
+    a.append(nm, ct);
+    ul.appendChild(a);
+  });
+  return ul;
+}
+
+/* ---- 載入資料 ---- */
+fetch('shops.json')
+  .then(r => r.json())
+  .then(d => {
+    SHOPS = d.shops || [];
+    document.getElementById('total').textContent = SHOPS.length;
+    /* 支援 shops.html?q=店名 直接帶入搜尋 */
+    const pre = new URLSearchParams(location.search).get('q');
+    if (pre) qEl.value = pre;
+    render();
+  })
+  .catch(() => {
+    out.innerHTML = '<div class="empty">店家資料載不進來。<br>'
+      + '這一頁需要從網路（或已快取的離線版）讀 shops.json，'
+      + '直接用 file:// 開會失敗。</div>';
+  });
+
+qEl.addEventListener('input', render);
+document.getElementById('clear').onclick = () => {
+  qEl.value = ''; cat = ''; loc = ''; render(); qEl.focus();
+};
+
+/* ---- 深淺色（與行程頁同一個偏好） ---- */
+(function () {
+  const btn = document.getElementById('theme');
+  const order = ['system', 'light', 'dark'];
+  const label = { light: '☀️ 淺色', dark: '🌙 深色', system: '⚙️ 系統' };
+  const bar = { light: '#f7f4ee', dark: '#16151a' };
+
+  function apply(t) {
+    document.documentElement.dataset.theme = t;
+    btn.textContent = label[t];
+    const dark = t === 'dark' ||
+      (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = dark ? bar.dark : bar.light;
+    try { localStorage.setItem('theme', t); } catch (e) {}
+  }
+  let cur = 'system';
+  try { cur = localStorage.getItem('theme') || 'system'; } catch (e) {}
+  if (!order.includes(cur)) cur = 'system';
+  apply(cur);
+  btn.onclick = () => { cur = order[(order.indexOf(cur) + 1) % order.length]; apply(cur); };
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (document.documentElement.dataset.theme === 'system') apply('system');
+  });
+})();
+
+const topBtn = document.getElementById('top');
+topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+addEventListener('scroll', () => topBtn.classList.toggle('show', scrollY > 500), { passive: true });
+
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
