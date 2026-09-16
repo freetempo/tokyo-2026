@@ -139,7 +139,7 @@ footer a{color:var(--accent)}
   <div class="tools">
     <div class="searchrow">
       <input id="q" type="search" inputmode="search" autocomplete="off"
-             placeholder="搜尋店名或類別（中日文皆可）" aria-label="搜尋店家">
+             placeholder="店名或類別（可打羅馬字：uniqlo、akachan）" aria-label="搜尋店家">
       <button class="clear" id="clear" aria-label="清除">✕</button>
     </div>
     <div class="chips" id="cats"></div>
@@ -243,7 +243,7 @@ function render() {
   let rows = SHOPS.filter(s =>
     (!cat || s.cat === cat) &&
     (!loc || locKey(s) === loc) &&
-    (!q || norm(s.name).includes(q) || norm(s.catRaw).includes(q) || norm(s.cat).includes(q))
+    (!q || norm(s.s || s.name).includes(q) || norm(s.cat).includes(q))
   );
 
   renderChips();
@@ -254,7 +254,20 @@ function render() {
   if (!rows.length) {
     const d = document.createElement('div');
     d.className = 'empty';
-    d.textContent = '沒有符合的店家。換個關鍵字，或把篩選清掉。';
+    const NOT_HERE = ['nike','adidas','newbalance','puma','asics','patagonia',
+      'northface','thenorthface','lululemon','zara' ,'h&m','hm','gu',
+      'apple','muji無','loft','donki','bic','yodobashi'];
+    const nq = norm(qEl.value);
+    const hit = NOT_HERE.find(k => nq && (k.includes(nq) || nq.includes(k)));
+    d.innerHTML = hit
+      ? '<b>豐洲沒有這家的專門店。</b><br>'
+        + '運動用品可以去 <b>スーパースポーツゼビオ</b>（豊洲1 NORTH PORT 2F，'
+        + '多品牌大店，Nike／adidas／New Balance 的鞋子這裡找得到）'
+        + '或 <b>ABC-MART</b>（豊洲1 CENTER PORT 2F，鞋類）。<br>'
+        + '<span style="font-size:13px">把搜尋清空可以看全部 214 家。</span>'
+      : '沒有符合的店家。<br><span style="font-size:13px">'
+        + '日文店名可以打羅馬字（akachan、uniqlo、starbucks 都可以），'
+        + '或把上面的篩選清掉。</span>';
     out.appendChild(d);
     return;
   }
