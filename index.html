@@ -11,10 +11,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <script>
-/* 在畫面繪製前就決定主題，避免閃一下白／黑。預設淺色。 */
+/* 在畫面繪製前就決定主題，避免閃一下白／黑。預設跟隨系統。 */
 (function(){
-  var t = "light";
-  try { t = localStorage.getItem("theme") || "light"; } catch (e) {}
+  var t = "system";
+  try { t = localStorage.getItem("theme") || "system"; } catch (e) {}
   document.documentElement.dataset.theme = t;
 })();
 </script>
@@ -244,10 +244,29 @@ const TRIP = [
       <div class="card">
         <h3>✈️ 航班</h3>
         <table class="ov">
-          <tr><td class="d">9/20</td><td><b>JX800</b>　桃園 TPE 08:30 → 成田 NRT 12:55<div class="h">星宇航空 · A350-900</div></td></tr>
-          <tr><td class="d">9/25</td><td><b>JX803</b>　成田 NRT 16:20 → 桃園 TPE<div class="h">星宇航空 · 飛行時間約 3 小時 40 分</div></td></tr>
+          <tr>
+            <td class="d">9/20 去</td>
+            <td>
+              <b>JX800</b>　星宇航空 · A350-900
+              <div class="h" style="margin-top:4px">
+                <b>08:30</b> 桃園 TPE　→　<b>12:55</b> 成田 NRT<br>
+                飛行約 3 小時 25 分（日本比台灣快 1 小時）
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="d">9/25 回</td>
+            <td>
+              <b>JX803</b>　星宇航空 · A350-900
+              <div class="h" style="margin-top:4px">
+                <b>16:20</b> 成田 NRT　→　<b>19:00</b> 桃園 TPE<br>
+                飛行約 3 小時 40 分
+              </div>
+            </td>
+          </tr>
         </table>
         <a class="map" target="_blank" rel="noopener" href="https://www.starlux-airlines.com/zh-TW">✈️ 星宇官網</a>
+        <a class="map" target="_blank" rel="noopener" href="https://www.narita-airport.jp/zh-tc/flight/">🛫 成田航班動態</a>
       </div>
 
       <details>
@@ -312,7 +331,7 @@ const TRIP = [
         </div></li>
         <li><div class="time">12:55</div><div class="body">
           <div class="what">抵達成田機場</div>
-          <div class="note">入境＋行李＋推車組裝，實際出關大約要 40–60 分鐘。</div>
+          <div class="note">表定 12:55 落地（日本時間，比台灣快 1 小時）。入境＋行李＋推車組裝，實際出關大約要 40–60 分鐘。</div>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">計程車 → 飯店</div>
@@ -644,12 +663,14 @@ const TRIP = [
           <div class="note"><span class="tag book">已預約</span>先確認上車地點是飯店大廳哪一側，並跟司機講清楚是<b>成田機場</b>、哪一個航廈（航廈看登機證或訂位確認信）。</div>
         </div></li>
         <li><div class="time">16:20</div><div class="body">
-          <div class="what">星宇航空 JX803 · 成田 NRT → 桃園 TPE</div>
-          <div class="note">國際線建議起飛前 2.5 小時到，也就是 13:50 前進航廈。飛行時間約 3 小時 40 分。</div>
+          <div class="what">星宇航空 JX803 · 成田 NRT 起飛</div>
+          <div class="note">國際線建議起飛前 2.5 小時到，也就是 13:50 前進航廈。飛行約 3 小時 40 分。</div>
           <a class="map" target="_blank" rel="noopener" href="https://www.starlux-airlines.com/zh-TW">✈️ 星宇官網</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.narita-airport.jp/zh-tc/flight/">🛫 成田航班動態</a>
         </div></li>
-        <li><div class="time blank">晚間</div><div class="body">
-          <div class="what">抵達台灣 · 回家休息嚕～</div>
+        <li><div class="time">19:00</div><div class="body">
+          <div class="what">抵達桃園 TPE · 回家休息嚕～</div>
+          <div class="note">表定 19:00 落地（台灣時間）。出關加等行李，到家大概要再抓 1.5 小時。</div>
         </div></li>
       </ul>
 
@@ -737,10 +758,10 @@ panels.addEventListener('click', e => {
   else el.innerHTML = `<span class="countdown">旅程已結束 · 回顧</span>`;
 })();
 
-/* 深淺色切換：淺色 → 深色 → 跟隨系統，記在 localStorage，預設淺色 */
+/* 深淺色切換：跟隨系統 → 淺色 → 深色，記在 localStorage，預設跟隨系統 */
 (function () {
   const btn = document.getElementById('theme');
-  const order = ['light', 'dark', 'system'];
+  const order = ['system', 'light', 'dark'];
   const label = { light: '☀️ 淺色', dark: '🌙 深色', system: '⚙️ 系統' };
   const bar = { light: '#f7f4ee', dark: '#16151a' };
 
@@ -755,9 +776,9 @@ panels.addEventListener('click', e => {
     try { localStorage.setItem('theme', t); } catch (e) {}
   }
 
-  let cur = 'light';
-  try { cur = localStorage.getItem('theme') || 'light'; } catch (e) {}
-  if (!order.includes(cur)) cur = 'light';
+  let cur = 'system';
+  try { cur = localStorage.getItem('theme') || 'system'; } catch (e) {}
+  if (!order.includes(cur)) cur = 'system';
   apply(cur);
 
   btn.onclick = () => {
