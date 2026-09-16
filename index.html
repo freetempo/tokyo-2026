@@ -79,7 +79,9 @@ nav::-webkit-scrollbar{display:none}
   flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
   border-radius:12px;padding:8px 13px;font:inherit;font-size:14px;cursor:pointer;
   text-align:center;line-height:1.35;
+  display:flex;flex-direction:column;justify-content:center;
 }
+.pill .pwx{display:block;font-size:11px;margin-top:3px;opacity:.85;white-space:nowrap}
 .pill b{display:block;font-size:13px;color:var(--ink)}
 .pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .pill.on b{color:#fff}
@@ -95,8 +97,10 @@ nav::-webkit-scrollbar{display:none}
 .wx{
   display:inline-block;margin:8px 0 0;padding:5px 11px;border-radius:9px;
   background:var(--accent-soft);color:var(--accent);
-  font-size:13.5px;font-weight:700;
+  font-size:13.5px;font-weight:700;text-decoration:none;
 }
+a.wx:active{opacity:.7}
+.wx .more{font-weight:400;opacity:.7}
 .wx .sub{font-weight:400;opacity:.8}
 .wx.off{background:none;padding:5px 0;color:var(--ink-soft);font-weight:400}
 
@@ -1566,6 +1570,7 @@ TRIP.forEach((d, i) => {
   b.className = 'pill';
   b.dataset.id = d.id;
   b.innerHTML = `<b>${d.tab}</b>${d.tabSub}${d.dow ? ' ' + d.dow : ''}`;
+  if (d.date) b.dataset.date = d.date;
   if (d.date === todayISO) b.classList.add('today');
   b.onclick = () => show(d.id, true);
   pills.appendChild(b);
@@ -1575,9 +1580,12 @@ TRIP.forEach((d, i) => {
   p.id = d.id;
   p.innerHTML = `<div class="dayhead"><h2>${d.title}</h2><p class="meta">${d.meta}</p></div>${d.html}`;
   if (d.date) {
-    const w = document.createElement('div');
+    const w = document.createElement('a');
     w.className = 'wx';
     w.dataset.date = d.date;
+    w.href = 'https://tenki.jp/forecast/3/16/4410/13108/10days.html';
+    w.target = '_blank';
+    w.rel = 'noopener';
     w.textContent = '天氣查詢中…';
     p.querySelector('.dayhead').appendChild(w);
   }
@@ -1728,13 +1736,30 @@ panels.addEventListener('click', e => {
     [[95, 96, 99], '⛈ 雷雨'],
   ];
   const label = c => (CODE.find(x => x[0].includes(c)) || [null, ''])[1];
+  const icon = c => label(c).split(' ')[0];
+
+  const TENKI = 'https://tenki.jp/forecast/3/16/4410/13108/10days.html';
 
   function fail() {
     slots.forEach(s => {
       s.className = 'wx off';
-      s.innerHTML = '天氣預報需要網路　'
-        + '<a target="_blank" rel="noopener" href="https://tenki.jp/forecast/3/16/4410/13108/">tenki.jp</a>';
+      s.textContent = '天氣預報需要網路，點這裡看 tenki.jp ↗';
     });
+  }
+
+  /* 頁籤上只放圖示＋最高溫，位置很小，細節留在頁內那一行 */
+  function paintPill(date, w) {
+    const pill = document.querySelector(`.pill[data-date="${date}"]`);
+    if (!pill) return;
+    let span = pill.querySelector('.pwx');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'pwx';
+      pill.appendChild(span);
+    }
+    span.textContent = w
+      ? `${icon(w.code)} ${Math.round(w.hi)}°`
+      : '';
   }
 
   const dates = slots.map(s => s.dataset.date).sort();
@@ -1759,17 +1784,20 @@ panels.addEventListener('click', e => {
         };
       });
       slots.forEach(s => {
-        const w = byDate[s.dataset.date];
+        const date = s.dataset.date;
+        const w = byDate[date];
         if (!w || w.hi === null) {
           s.className = 'wx off';
           s.textContent = '這一天還沒有預報（超出可預報範圍）';
+          paintPill(date, null);
           return;
         }
         s.className = 'wx';
         s.innerHTML = `${Math.round(w.lo)}–${Math.round(w.hi)}°C`
           + `　降雨 ${w.pop == null ? '–' : w.pop + '%'}`
           + `　${label(w.code)}`
-          + '<span class="sub">　· 東京灣沿岸</span>';
+          + '<span class="more">　· 東京灣沿岸 ↗</span>';
+        paintPill(date, w);
       });
     })
     .catch(fail);
