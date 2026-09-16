@@ -197,6 +197,20 @@ details>summary .n{
 }
 .hgroup.no{background:var(--warm-soft);color:var(--warm)}
 
+/* ---- 颱風資訊 ---- */
+#typhoon{margin:0 0 12px}
+.ty{background:var(--warm-soft);border-radius:12px;padding:13px 15px;font-size:14px;line-height:1.65}
+.ty.calm{background:var(--accent-soft)}
+.ty strong{display:block;margin-bottom:4px}
+.ty p{margin:0 0 6px}
+.ty p:last-child{margin:0}
+.tytbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0 6px}
+.tytbl td{padding:5px 3px;border-bottom:1px solid rgba(128,128,128,.22);vertical-align:top}
+.tytbl tr:last-child td{border-bottom:0}
+.tytbl .t{white-space:nowrap;font-weight:700;width:1%;padding-right:8px}
+.tytbl tr.near td{color:var(--warm);font-weight:700}
+.ty .asof{font-size:12px;opacity:.75}
+
 /* ---- 店家清單（LaLaport 頁籤） ---- */
 .tools{
   position:sticky;top:0;z-index:20;background:var(--paper);
@@ -302,6 +316,8 @@ const TRIP = [
     title:"行程總覽",
     meta:"星宇航空 JX800／JX803 成田來回 · 前三晚豐洲、後兩晚迪士尼",
     html:`
+      <div id="typhoon"></div>
+
       <div class="card">
         <table class="ov">
           <tr><td class="d"><a href="#!d1">9/20 日</a></td><td><a href="#!d1"><b>抵達東京 · 豐洲 LaLaport</b><div class="h">三井花園飯店 豐洲普米爾</div></a></td></tr>
@@ -523,6 +539,15 @@ const TRIP = [
         <p>12:55 落地、出關、加上成田到豐洲一趟 70–90 分鐘的車程，進飯店大概就下午 4 點了。第一天只排「飯店 → 走路到商場 → 吃飯」是對的，不要再加行程。</p>
         <p><b>推車要排在晚餐前買</b> — 18:00 有 Bubba Gump 的訂位，而且接下來 Day 2 去大宮就要用到了。試推區挑一下，不要留到最後一刻。</p>
         <p>要先買的東西：便利商店的水、飯店附近的藥妝。LaLaport 裡面都有。</p>
+      </div>
+
+      <div class="note-box warm">
+        <strong>🌀 今天可能受颱風影響</strong>
+        <p>出發前<b>一定要確認航班狀態</b>。颱風靠近時成田的起降會延誤或取消，
+        而且就算飛機照飛，成田到豐洲的高速公路也可能因強風封閉。</p>
+        <p>總覽頁最上面有即時的颱風資訊。當天先看
+        <a target="_blank" rel="noopener" href="https://www.narita-airport.jp/zh-tc/flight/">成田航班動態</a>
+        和星宇的通知。</p>
       </div>
 
       <div class="note-box warm">
@@ -1787,7 +1812,7 @@ panels.addEventListener('click', e => {
     + '&timezone=Asia%2FTokyo'
     + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
 
-  fetch(url, { cache: 'no-store' })
+  fetch(url + '&_t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(res => {
       const list = Array.isArray(res) ? res : [res];
@@ -1829,6 +1854,105 @@ panels.addEventListener('click', e => {
       });
     })
     .catch(fail);
+})();
+
+/* ---------- 颱風資訊 ----------
+   資料直接取自氣象庁的 bosai JSON（CORS 開放）：
+     targetTc.json               → 目前有哪些熱帶氣旋
+     <TC編號> 的 specifications.json → 實況與各時間點的預報
+
+   這是官方但沒有正式文件的端點，格式可能改，所以整段包在 try 裡，
+   解析不出來就退成「去官方頁看」的連結，絕不顯示可能錯的內容。
+   同樣刻意不進 service worker 快取 —— 颱風資訊過期就是危險。 */
+(function () {
+  const box = document.getElementById('typhoon');
+  if (!box) return;
+
+  const JMA = 'https://www.jma.go.jp/bosai/typhoon/';
+  const TENKI = 'https://tenki.jp/bousai/typhoon/';
+  const links = '<p><a target="_blank" rel="noopener" href="' + JMA + '">氣象廳颱風情報 ↗</a>'
+    + '　<a target="_blank" rel="noopener" href="' + TENKI + '">tenki.jp 進路預想 ↗</a></p>';
+
+  function show(cls, html) {
+    box.innerHTML = `<div class="ty ${cls}">${html}</div>`;
+  }
+
+  function offline() {
+    show('calm', '<strong>🌀 颱風資訊</strong>'
+      + '<p>需要網路才能取得最新颱風資訊。九月是颱風季，出發前與旅程中請自行確認。</p>'
+      + links);
+  }
+
+  /* 東京大致在 35.7N 139.7E。粗略判斷預報點離關東多近，只用來標色提醒，
+     不做任何預測 —— 真正的判斷看官方進路圖。 */
+  function nearKanto(pos) {
+    if (!pos || pos.length < 2) return false;
+    const dLat = Math.abs(pos[0] - 35.7), dLon = Math.abs(pos[1] - 139.7);
+    return dLat < 6 && dLon < 6;
+  }
+
+  fetch(JMA + 'data/targetTc.json?_t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(list => {
+      if (!Array.isArray(list) || !list.length) {
+        show('calm', '<strong>🌀 目前日本附近沒有颱風</strong>'
+          + '<p>九月是颱風季，狀況隨時會變，出發前再看一次。</p>' + links);
+        return;
+      }
+      const tc = list[0].tropicalCyclone;
+      return fetch(`${JMA}data/${tc}/specifications.json?_t=${Date.now()}`, { cache: 'no-store' })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(spec => {
+          const head = spec[0] || {};
+          const num = (head.typhoonNumber || '').slice(-2).replace(/^0/, '');
+          const nm = head.name || {};
+          const issue = (head.issue || {}).JST || '';
+
+          const rows = spec.slice(1).map(part => {
+            const when = (part.validtime || {}).JST || '';
+            const label = (part.part && part.part.jp) || '';
+            const pos = (part.position || {}).deg;
+            const wind = ((part.maximumWind || {}).sustained || {})['m/s'];
+            const gust = ((part.maximumWind || {}).gust || {})['m/s'];
+            return {
+              when: when ? `${+when.slice(5, 7)}/${+when.slice(8, 10)} ${when.slice(11, 16)}` : label,
+              loc: part.location || '',
+              pres: part.pressure || '',
+              wind, gust,
+              near: nearKanto(pos),
+              scale: part.scale || '',
+            };
+          }).filter(r => r.loc || r.pres);
+
+          const table = rows.length ? '<table class="tytbl">' + rows.map(r =>
+            `<tr class="${r.near ? 'near' : ''}"><td class="t">${r.when}</td>`
+            + `<td>${r.loc}${r.scale ? '（' + r.scale + '）' : ''}</td>`
+            + `<td style="white-space:nowrap">${r.pres ? r.pres + ' hPa' : ''}</td>`
+            + `<td style="white-space:nowrap">${r.wind ? '風 ' + r.wind : ''}${r.gust ? '／陣 ' + r.gust : ''}</td></tr>`
+          ).join('') + '</table>' : '';
+
+          const anyNear = rows.some(r => r.near);
+
+          /* 颱風資訊過期就是危險，所以一定要看得出資料多舊 */
+          const ageH = issue ? (Date.now() - new Date(issue).getTime()) / 3600000 : null;
+          const stale = ageH != null && ageH > 6;
+
+          show('', `<strong>🌀 台風${num}号　${nm.jp || ''}${nm.en ? '（' + nm.en + '）' : ''}</strong>`
+            + (stale
+              ? `<p><b>⚠️ 這是 ${Math.round(ageH)} 小時前的資料</b>，可能已經過期`
+                + '（沒網路時會看到舊的）。請點下面的官方連結確認最新狀況。</p>'
+              : '')
+            + (anyNear
+              ? '<p><b>官方預報路徑會接近關東。</b>行程可能受影響，尤其班機與戶外安排。</p>'
+              : '<p>目前官方預報路徑沒有特別接近關東，但颱風路徑常變，每天看一次。</p>')
+            + table
+            + `<p class="asof">氣象廳發布 ${issue.slice(0, 16).replace('T', ' ')}`
+            + (ageH != null ? `（${ageH < 1 ? '不到 1' : Math.round(ageH)} 小時前）` : '')
+            + '　橘色列＝預報位置接近關東</p>'
+            + links);
+        });
+    })
+    .catch(offline);
 })();
 
 /* 回到頂端 */
