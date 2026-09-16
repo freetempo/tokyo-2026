@@ -1,10 +1,9 @@
 // 由 tools/build-sw.py 產生，請不要手改。
-const CACHE = "tokyo2026-48aace4200";
+const CACHE = "tokyo2026-5b6614d9f2";
 const ASSETS = [
   "./",
   "index.html",
-  "shops.html",
-  "shops.json",
+  "shops.js",
   "manifest.webmanifest",
   "icons/icon-180.png",
   "icons/icon-192.png",

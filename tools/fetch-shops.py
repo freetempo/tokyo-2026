@@ -18,7 +18,7 @@ import urllib.request
 
 URL = "https://mitsui-shopping-park.com/lalaport/toyosu/shopguide/"
 SITE = "https://mitsui-shopping-park.com"
-OUT = pathlib.Path(__file__).resolve().parent.parent / "shops.json"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "shops.js"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/140.0 Safari/537.36")
 
@@ -254,12 +254,14 @@ def main() -> int:
         s["name"],
     ))
 
-    OUT.write_text(json.dumps({"source": URL, "shops": shops},
-                              ensure_ascii=False, separators=(",", ":")),
-                   encoding="utf-8")
+    # 刻意寫成 .js 而不是 .json：用 <script> 載入跟 index.html 走同一條路，
+    # 離線一定拿得到；用 fetch() 抓 .json 在 service worker 底下不夠可靠。
+    payload = json.dumps({"source": URL, "shops": shops},
+                         ensure_ascii=False, separators=(",", ":"))
+    OUT.write_text("window.SHOPS_DATA=" + payload + ";\n", encoding="utf-8")
 
     from collections import Counter
-    print(f"shops.json 已更新　{len(shops)} 家店　{OUT.stat().st_size / 1024:.0f} KB")
+    print(f"shops.js 已更新　{len(shops)} 家店　{OUT.stat().st_size / 1024:.0f} KB")
     for k, v in Counter(f'{s["bld"]} {s["zone"]} {s["floor"]}'.strip() for s in shops).most_common():
         print(f"  {v:>3}  {k}")
     names = {s["name"] for s in shops}

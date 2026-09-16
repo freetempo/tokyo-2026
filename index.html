@@ -186,6 +186,48 @@ details>summary .n{
 }
 .hgroup.no{background:var(--warm-soft);color:var(--warm)}
 
+/* ---- 店家清單（LaLaport 頁籤） ---- */
+.tools{
+  position:sticky;top:0;z-index:20;background:var(--paper);
+  padding:10px 0 8px;margin:0 0 4px;border-bottom:1px solid var(--line);
+}
+.searchrow{display:flex;gap:8px;align-items:center}
+#shop-q{
+  flex:1 1 auto;min-width:0;font:inherit;font-size:16px;
+  padding:11px 13px;border:1px solid var(--line);border-radius:11px;
+  background:var(--card);color:var(--ink);
+}
+#shop-q:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.clear{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  border-radius:11px;padding:10px 12px;font:inherit;font-size:14px;cursor:pointer;
+}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:9px 0 2px;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;
+}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.count{font-size:13px;color:var(--ink-soft);padding:6px 0 0}
+.sgroup{margin:20px 0 0}
+.sgroup h3{
+  font-size:14px;margin:0 0 8px;color:var(--accent);
+  background:var(--accent-soft);display:inline-block;padding:5px 11px;border-radius:9px;
+}
+.sgroup h3 span{font-weight:400;opacity:.75}
+.slist{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.shop{display:flex;gap:10px;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.shop:last-child{border-bottom:0}
+.shop:active{background:var(--accent-soft)}
+.shop .nm{flex:1 1 auto;min-width:0;font-weight:700;font-size:15px;word-break:break-word}
+.shop .ct{flex:0 0 auto;font-size:11.5px;color:var(--ink-soft);text-align:right;max-width:38%}
+.shop .fl{display:block;font-size:11.5px;color:var(--ink-soft);font-weight:400;margin-top:2px}
+.shop.star{background:var(--warm-soft)}
+.shop.star .nm::before{content:"⭐ "}
+.shop .why{display:block;font-size:12px;color:var(--warm);font-weight:700;margin-top:3px}
+.empty{padding:28px 4px;text-align:center;color:var(--ink-soft);font-size:14px}
+
 /* ---- overview table ---- */
 .ov{width:100%;border-collapse:collapse;font-size:14px}
 .ov td{padding:11px 4px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -221,7 +263,7 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);font-si
   <main id="panels"></main>
 
   <footer>
-    <p><a class="map" href="shops.html">🏬 LaLaport 豐洲店家清單</a>
+    <p><a class="map" href="#!shops">🏬 LaLaport 豐洲店家清單</a>
     <a class="map" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/15Fa_n71L5rOMzxMwrKZZ0qIVo3p1NUlqZlxBhaOOIA8/">📋 原始行程 Google Sheet</a></p>
     <p>這一頁的內容來自上面那份 Sheet。<b>Sheet 是唯一的事實來源</b> — 行程有變動先改 Sheet，再更新這一頁。</p>
     <p>行程頁離線可用：手機用 Safari 開這個網址 → 分享 → 加入主畫面。<br>
@@ -233,6 +275,7 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);font-si
 </div>
 <button class="top" id="top" aria-label="回到頂端">↑</button>
 
+<script src="shops.js"></script>
 <script>
 const G = q => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 
@@ -367,7 +410,7 @@ const TRIP = [
             <li><b>成城石井</b>（豊洲3 B1）超市、<b>カルディ</b>（豊洲1 SOUTH PORT 1F）進口食品、
                 <b>富澤商店</b>（豊洲1 SOUTH PORT 2F）烘焙食材 — 買零食伴手禮</li>
           </ul>
-          <a class="map" href="shops.html">🏬 全部 214 家店</a>
+          <a class="map" href="#!shops">🏬 全部 214 家店</a>
 
           <h4>想逛大型電器店 → BIC Camera 有楽町店</h4>
           <p><b>豐洲搭有樂町線直達有樂町，約 7 分鐘，不用轉車</b>；出站（日比谷口／D4 出口）走 1 分鐘就到。
@@ -441,12 +484,12 @@ const TRIP = [
           Melio 的 2026 年款有在賣。買完當天就能用，接下來五天都靠它。</div>
           <a class="map" target="_blank" rel="noopener" href="${G('アカチャンホンポ ららぽーと豊洲店')}">🗺 地圖</a>
           <a class="map" target="_blank" rel="noopener" href="https://shop.akachan.jp/shop/r/rcybex/">🍼 Cybex 線上型號</a>
-          <a class="map" href="shops.html?q=アカチャンホンポ">🏬 店家清單</a>
+          <a class="map" href="#!shops">🏬 店家清單</a>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">LaLaport TOYOSU 血拼</div>
           <div class="note">從飯店走路可到，室內商場，下雨或熱都不怕。<span class="tag stroll">推車 OK</span><br>
-          全 214 家店可以按樓層瀏覽或搜尋店名 → <b><a href="shops.html">店家清單</a></b></div>
+          全 214 家店可以按樓層瀏覽或搜尋店名 → <b><a href="#!shops">店家清單</a></b></div>
           <a class="map" target="_blank" rel="noopener" href="${G('アーバンドック ららぽーと豊洲')}">🗺 地圖</a>
           <a class="map" target="_blank" rel="noopener" href="https://mitsui-shopping-park.com/lalaport/toyosu/">🛍 官網</a>
           <a class="map" target="_blank" rel="noopener" href="https://mitsui-shopping-park.com/lalaport/toyosu/floor/">🗂 樓層地圖</a>
@@ -1153,8 +1196,289 @@ const TRIP = [
         表演場次每天不同，出發前與當天都用官方 App 再確認一次。
       </p>
     `
+  },
+
+  /* ============ LaLaport 店家清單 ============ */
+  {
+    id:"shops", tab:"店家", tabSub:"LaLaport",
+    title:"LaLaport 豐洲 店家清單",
+    meta:"アーバンドック ららぽーと豊洲 · 全 214 家 · 資料抓自官方店家一覽",
+    html:`
+      <div class="tools">
+        <div class="searchrow">
+          <input id="shop-q" type="search" inputmode="search" autocomplete="off"
+                 placeholder="店名或類別（可打羅馬字：uniqlo、akachan）" aria-label="搜尋店家">
+          <button class="clear" id="shop-clear" aria-label="清除">✕</button>
+        </div>
+        <div class="chips" id="shop-cats"></div>
+        <div class="chips" id="shop-locs"></div>
+        <div class="count" id="shop-count">載入中…</div>
+      </div>
+
+      <div id="shop-out"></div>
+
+      <div class="note-box warm">
+        <strong>🛒 行程上會用到的四家（清單裡標 ⭐）</strong>
+        <p><b>アカチャンホンポ</b>（買 Cybex Melio）和 <b>ババ・ガンプ・シュリンプ</b>（Day 1 晚餐）
+        <b>都在 豊洲1 NORTH PORT 3F</b> — 同一層樓，買完推車走幾步就吃飯。</p>
+        <p><b>ALOHA TABLE</b>（Day 2 晚餐）和備案 <b>Royal Garden Cafe&TAVERN</b>
+        <b>都在 豊洲3 1F</b> — 也在同一層，臨時要換很方便。</p>
+      </div>
+
+      <div class="note-box">
+        <strong>🏢 LaLaport 豐洲分成三棟</strong>
+        <p><b>豊洲1</b>　主館，分 NORTH / CENTER / SOUTH PORT 三區，各 1–3F，店最多。<br>
+        <b>豊洲2</b>　1–2F，店少。<br>
+        <b>豊洲3</b>　B1–4F，餐廳集中在 1F、超市等在 B1。</p>
+        <p style="margin-top:6px">有幾個店名會出現多次，那是真的有多處：<b>セブン銀行ATM</b> 五個樓層各一台、
+        <b>ZARA</b> 跨 1F 與 2F、<b>フレッシュネスバーガー</b> 有獨立店與美食廣場店。</p>
+      </div>
+
+      <p style="font-size:13px;color:var(--ink-soft);margin:14px 0 0">
+        點店名可開官方頁看營業時間。店家會變動，以現場與官網為準。<br>
+        要更新清單：repo 裡跑 <code>python3 tools/fetch-shops.py</code> 再跑 <code>python3 tools/build-sw.py</code>。
+      </p>
+    `
   }
 ];
+
+/* ---------- LaLaport 店家清單 ----------
+   整段包在 IIFE 裡，只對外露出 Shops.init()，不跟行程頁的變數打到。
+   shops.json 只在第一次點進「店家」頁籤時才載，首頁開啟速度不受影響。 */
+const Shops = (function () {
+  const CATS = ['美食', '服飾', '居家雜貨', '服務・其他'];
+  const LOC_ORDER = ['豊洲1 NORTH PORT', '豊洲1 CENTER PORT', '豊洲1 SOUTH PORT', '豊洲2', '豊洲3'];
+  const FLOORS = ['B1', '1F', '2F', '3F', '4F'];
+
+  /* 已查證豐洲沒有專門店的品牌 → 指去替代店。
+     都是實際比對過 shops.json 才寫的，不要憑印象加。 */
+  const ABSENT = [
+    { keys: ['gu', 'ジーユー'],
+      msg: '豐洲<b>沒有 GU</b>。同集團的 <b>ユニクロ</b> 在 <b>豊洲1 NORTH PORT 2F</b>。' },
+    { keys: ['nike', 'ナイキ', 'adidas', 'アディダス', 'newbalance', 'ニューバランス',
+             'asics', 'アシックス', 'puma', 'プーマ', 'onitsuka', 'オニツカ',
+             'patagonia', 'パタゴニア', 'northface', 'thenorthface', 'ノースフェイス', 'lululemon'],
+      msg: '豐洲<b>沒有這些運動品牌的專門店</b>。多品牌大店 <b>スーパースポーツゼビオ</b>'
+         + '（豊洲1 NORTH PORT 2F）和鞋類的 <b>ABC-MART</b>（豊洲1 CENTER PORT 2F）'
+         + '可以找到這些牌子的商品。' },
+    { keys: ['h&m', 'hm'],
+      msg: '豐洲<b>沒有 H&amp;M</b>。同類的快時尚有 <b>ZARA</b>（豊洲1 SOUTH PORT 1F）、'
+         + '<b>ユニクロ</b> 和 <b>GAP</b>（都在 NORTH PORT 2F）。' },
+    { keys: ['loft', 'ロフト', 'nitori', 'ニトリ', '3coins', 'スリーコインズ', 'seria', 'セリア'],
+      msg: '豐洲<b>沒有這幾家生活雜貨店</b>。替代：<b>無印良品</b>（豊洲1 SOUTH PORT 2F）、'
+         + '<b>ザ・ダイソー</b>（CENTER PORT 3F）、<b>ハンズ</b>（NORTH PORT 1F）。' },
+    { keys: ['donki', 'ドンキ', 'ドンキホーテ', 'bic', 'ビックカメラ', 'yodobashi', 'ヨドバシ', 'apple'],
+      msg: '豐洲<b>沒有大型電器店</b>，只有 <b>ノジマ</b>（豊洲3 3F）。'
+         + '想逛大的：<b>BIC Camera 有楽町店</b>，豐洲搭有樂町線直達約 7 分鐘、出站走 1 分鐘。' },
+    { keys: ['pokemon', 'ポケモン', 'jellycat', 'gelatopique', 'ジェラートピケ',
+             'snidel', 'スナイデル', 'babiesrus', 'ベビーザらス'],
+      msg: '豐洲<b>沒有這家</b>。玩具去 <b>トイザらス</b>（豊洲1 CENTER PORT 3F）、'
+         + '嬰幼用品去 <b>アカチャンホンポ</b>（NORTH PORT 3F）。' },
+  ];
+
+  let SHOPS = [];
+  let started = false;
+  let cat = '';
+  let loc = '';
+  let els = null;
+
+  /* 搜尋用的正規化：全形英數→半形、片假名→平假名、去掉中黑點與空白 */
+  function norm(s) {
+    return (s || '')
+      .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+      .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+      .replace(/[ｰ―－—]/g, 'ー')
+      .toLowerCase()
+      .replace(/[・･\s　]/g, '');
+  }
+
+  function absentHint(nq) {
+    if (!nq) return null;
+    for (const a of ABSENT) {
+      for (const k of a.keys) {
+        const nk = norm(k);
+        if (nq === nk || (nq.length >= 3 && nk.includes(nq))) return a.msg;
+      }
+    }
+    return null;
+  }
+
+  const locKey = s => (s.bld + (s.zone ? ' ' + s.zone : '')).trim();
+
+  function chip(label, on, onclick) {
+    const b = document.createElement('button');
+    b.className = 'chip' + (on ? ' on' : '');
+    b.textContent = label;
+    b.onclick = onclick;
+    return b;
+  }
+
+  function renderChips() {
+    els.cats.textContent = '';
+    els.cats.appendChild(chip('全部類別', cat === '', () => { cat = ''; render(); }));
+    CATS.forEach(c => {
+      const n = SHOPS.filter(s => s.cat === c).length;
+      if (!n) return;
+      els.cats.appendChild(chip(`${c} ${n}`, cat === c, () => { cat = cat === c ? '' : c; render(); }));
+    });
+
+    els.locs.textContent = '';
+    els.locs.appendChild(chip('全部區域', loc === '', () => { loc = ''; render(); }));
+    LOC_ORDER.forEach(k => {
+      const n = SHOPS.filter(s => locKey(s) === k).length;
+      if (!n) return;
+      const short = k.replace('豊洲1 ', '').replace(' PORT', '');
+      els.locs.appendChild(chip(`${short} ${n}`, loc === k, () => { loc = loc === k ? '' : k; render(); }));
+    });
+  }
+
+  function makeList(rows, showLoc) {
+    const box = document.createElement('div');
+    box.className = 'slist';
+    rows.forEach(s => {
+      const a = document.createElement('a');
+      a.className = 'shop' + (s.star ? ' star' : '');
+      if (s.url) { a.href = s.url; a.target = '_blank'; a.rel = 'noopener'; }
+
+      const nm = document.createElement('div');
+      nm.className = 'nm';
+      nm.textContent = s.name;
+      if (showLoc) {
+        const fl = document.createElement('span');
+        fl.className = 'fl';
+        fl.textContent = `${locKey(s)} ${s.floor}`.trim() || '位置未標示';
+        nm.appendChild(fl);
+      }
+      if (s.star) {
+        const why = document.createElement('span');
+        why.className = 'why';
+        why.textContent = s.star;
+        nm.appendChild(why);
+      }
+
+      const ct = document.createElement('div');
+      ct.className = 'ct';
+      ct.textContent = s.catRaw || s.cat;
+
+      a.append(nm, ct);
+      box.appendChild(a);
+    });
+    return box;
+  }
+
+  function render() {
+    const raw = els.q.value;
+    const q = norm(raw);
+    let rows = SHOPS.filter(s =>
+      (!cat || s.cat === cat) &&
+      (!loc || locKey(s) === loc) &&
+      (!q || norm(s.s || s.name).includes(q) || norm(s.cat).includes(q))
+    );
+
+    /* 短關鍵字（例如 gu）在羅馬字裡很容易誤中，店名命中的排前面 */
+    if (q) {
+      const score = s => {
+        const n = norm(s.name);
+        if (n === q) return 0;
+        if (n.startsWith(q)) return 1;
+        if (n.includes(q)) return 2;
+        return 3;
+      };
+      rows = rows.map(s => [score(s), s]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+    }
+
+    renderChips();
+    els.count.textContent = `顯示 ${rows.length} / ${SHOPS.length} 家`
+      + (q ? `　搜尋「${raw.trim()}」` : '');
+
+    els.out.textContent = '';
+
+    const hint = absentHint(q);
+    if (hint && rows.length) {
+      const nb = document.createElement('div');
+      nb.className = 'note-box warm';
+      nb.style.margin = '14px 0 0';
+      nb.innerHTML = '<strong>ℹ️ 這個品牌豐洲沒有</strong><p>' + hint
+        + '</p><p style="font-size:13px">下面是名稱或羅馬字剛好近似的店。</p>';
+      els.out.appendChild(nb);
+    }
+
+    if (!rows.length) {
+      const d = document.createElement('div');
+      d.className = 'empty';
+      d.innerHTML = hint
+        ? '<b>' + hint + '</b><br><span style="font-size:13px">把搜尋清空可以看全部 '
+          + SHOPS.length + ' 家。</span>'
+        : '沒有符合的店家。<br><span style="font-size:13px">'
+          + '日文店名可以打羅馬字（akachan、uniqlo、starbucks 都可以），或把上面的篩選清掉。</span>';
+      els.out.appendChild(d);
+      return;
+    }
+
+    /* 有搜尋字就攤平成一張清單（跨樓層找店比較快）；否則按區域＋樓層分組 */
+    if (q) {
+      els.out.appendChild(makeList(rows, true));
+      return;
+    }
+
+    const groups = new Map();
+    rows.forEach(s => {
+      const k = locKey(s) + '｜' + (s.floor || '其他');
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(s);
+    });
+
+    [...groups.keys()].sort((a, b) => {
+      const [la, fa] = a.split('｜'), [lb, fb] = b.split('｜');
+      const oa = LOC_ORDER.indexOf(la), ob = LOC_ORDER.indexOf(lb);
+      if (oa !== ob) return (oa < 0 ? 99 : oa) - (ob < 0 ? 99 : ob);
+      const ia = FLOORS.indexOf(fa), ib = FLOORS.indexOf(fb);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    }).forEach(k => {
+      const [l, f] = k.split('｜');
+      const sec = document.createElement('section');
+      sec.className = 'sgroup';
+      const hd = document.createElement('h3');
+      hd.innerHTML = `${l} ${f} <span>· ${groups.get(k).length} 家</span>`;
+      sec.appendChild(hd);
+      sec.appendChild(makeList(groups.get(k), false));
+      els.out.appendChild(sec);
+    });
+  }
+
+  /* 第一次點進「店家」頁籤才載資料 */
+  function init() {
+    if (started) return;
+    started = true;
+
+    els = {
+      q: document.getElementById('shop-q'),
+      clear: document.getElementById('shop-clear'),
+      cats: document.getElementById('shop-cats'),
+      locs: document.getElementById('shop-locs'),
+      count: document.getElementById('shop-count'),
+      out: document.getElementById('shop-out'),
+    };
+    if (!els.q) { started = false; return; }
+
+    els.q.addEventListener('input', render);
+    els.clear.onclick = () => { els.q.value = ''; cat = ''; loc = ''; render(); els.q.focus(); };
+
+    /* 資料由 shops.js 用 <script> 載入（window.SHOPS_DATA），
+       不走 fetch —— 離線時最可靠。 */
+    const data = window.SHOPS_DATA;
+    if (!data || !data.shops) {
+      els.count.textContent = '';
+      els.out.innerHTML = '<div class="empty">店家資料沒載進來。<br>'
+        + '按頁面最下面的「🔄 重新整理」試一次。</div>';
+      return;
+    }
+    SHOPS = data.shops;
+    render();
+  }
+
+  return { init };
+})();
 
 /* ---------- render ---------- */
 const pills = document.getElementById('pills');
@@ -1181,6 +1505,7 @@ function show(id, scroll) {
   TRIP.forEach(d => {
     document.getElementById(d.id).classList.toggle('on', d.id === id);
   });
+  if (id === 'shops') Shops.init();
   [...pills.children].forEach(b => b.classList.toggle('on', b.dataset.id === id));
   if (history.replaceState) history.replaceState(null, '', '#!' + id);
   if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1201,6 +1526,14 @@ function defaultPanel() {
   return today ? today.id : 'ov';
 }
 show(defaultPanel(), false);
+
+/* footer 等 #panels 外面的連結，還有瀏覽器上一頁／下一頁，都靠 hashchange */
+addEventListener('hashchange', () => {
+  const id = location.hash.replace(/^#!?/, '');
+  if (id && TRIP.some(d => d.id === id) && !document.getElementById(id).classList.contains('on')) {
+    show(id, true);
+  }
+});
 
 /* 總覽表格的內部連結 */
 panels.addEventListener('click', e => {
@@ -1285,6 +1618,7 @@ panels.addEventListener('click', e => {
     location.replace(u.toString());
   };
 })();
+
 
 /* 回到頂端 */
 const topBtn = document.getElementById('top');

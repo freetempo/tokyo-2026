@@ -11,7 +11,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # 要離線快取的東西。tools/ 與 .git/ 不進去。
-PATTERNS = ("index.html", "shops.html", "shops.json",
+PATTERNS = ("index.html", "shops.js",
             "manifest.webmanifest", "icons/*.png", "img/*")
 SKIP_DIRS = {".git", "tools"}
 

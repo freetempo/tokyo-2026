@@ -10,11 +10,13 @@
 
 | 檔案 | 說明 |
 |---|---|
-| `index.html` | 整個頁面。版面在 `<style>`、內容在最下面的 `TRIP` 陣列，改內容只要動 `TRIP`。 |
+| `index.html` | 整個頁面（行程 + 迪士尼攻略 + 店家清單）。版面在 `<style>`、內容在 `TRIP` 陣列。 |
+| `shops.js` | LaLaport 店家資料，由 `tools/fetch-shops.py` 產生。刻意是 `.js` 而不是 `.json`：用 `<script>` 載入跟 index.html 走同一條路，離線才可靠（`fetch()` 抓 json 在 service worker 底下試過會失敗）。 |
 | `manifest.webmanifest` | PWA 設定（名稱、顏色、icon）。 |
 | `sw.js` | Service worker，由 `tools/build-sw.py` 產生，**不要手改**。 |
 | `icons/` | `icon.svg` 是原始檔，三個 png 由它產生。 |
 | `tools/build-sw.py` | 重算快取清單與版本號。 |
+| `tools/fetch-shops.py` | 從三井官網重抓店家清單，產生 `shops.js`。 |
 
 ## 改內容
 
