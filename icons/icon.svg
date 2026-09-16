@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="0" fill="#1b4965"/>
+  <circle cx="256" cy="196" r="96" fill="#c1502e"/>
+  <rect x="120" y="330" width="272" height="20" rx="10" fill="#f7f4ee"/>
+  <rect x="120" y="374" width="272" height="20" rx="10" fill="#f7f4ee" opacity=".55"/>
+  <text x="256" y="226" font-family="Hiragino Sans, PingFang TC, sans-serif" font-size="104" font-weight="700" fill="#f7f4ee" text-anchor="middle">東</text>
+</svg>

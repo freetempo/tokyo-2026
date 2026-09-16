@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>2026 東京 · 六天五夜</title>
+<meta name="theme-color" content="#1b4965">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="東京 2026">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+:root{
+  --paper:#f7f4ee; --card:#fff; --ink:#1e1c19; --ink-soft:#6a655d;
+  --line:#e3ddd2; --accent:#1b4965; --accent-soft:#e8eef3;
+  --warm:#c1502e; --warm-soft:#fbeae4; --good:#3f7d52; --good-soft:#e8f1ea;
+  --shadow:0 1px 2px rgba(31,29,26,.06),0 4px 14px rgba(31,29,26,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#16151a; --card:#1f1e24; --ink:#eceae5; --ink-soft:#a09a90;
+    --line:#332f38; --accent:#7fb3d3; --accent-soft:#1e2a33;
+    --warm:#e88a68; --warm-soft:#33211b; --good:#7fba92; --good-soft:#1c2a20;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Hiragino Sans",sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding:0 0 64px;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+/* ---- header ---- */
+header{padding:28px 0 4px}
+h1{font-size:26px;line-height:1.3;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--ink-soft);font-size:14px;margin:0}
+.countdown{
+  display:inline-block;margin-top:12px;padding:5px 12px;border-radius:999px;
+  background:var(--warm-soft);color:var(--warm);font-size:13px;font-weight:700;
+}
+
+/* ---- day nav ---- */
+nav{margin:18px -16px 0;padding:0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
+.pills{display:flex;gap:8px;padding-bottom:4px;width:max-content}
+.pill{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+  border-radius:12px;padding:8px 13px;font:inherit;font-size:14px;cursor:pointer;
+  text-align:center;line-height:1.35;
+}
+.pill b{display:block;font-size:13px;color:var(--ink)}
+.pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill.on b{color:#fff}
+.pill.today::after{content:"·今天";font-size:11px;color:var(--warm);font-weight:700}
+.pill.on.today::after{color:#ffd9cc}
+
+/* ---- panels ---- */
+.panel{display:none;padding-top:22px}
+.panel.on{display:block}
+.dayhead{margin:0 0 14px}
+.dayhead h2{font-size:21px;margin:0 0 6px;letter-spacing:-.01em}
+.dayhead .meta{font-size:14px;color:var(--ink-soft);margin:0}
+
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:16px;margin:0 0 12px;box-shadow:var(--shadow);
+}
+.card h3{font-size:16px;margin:0 0 8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card h3 .t{
+  font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);
+  padding:2px 8px;border-radius:7px;font-variant-numeric:tabular-nums;
+}
+.card p{margin:0 0 10px}
+.card p:last-child,.card ul:last-child,.card ol:last-child{margin-bottom:0}
+.card ul,.card ol{margin:0 0 10px;padding-left:1.35em}
+.card li{margin:0 0 4px}
+
+/* ---- timeline ---- */
+.tl{list-style:none;margin:0;padding:0}
+.tl>li{display:flex;gap:12px;padding:0 0 4px}
+.tl .time{
+  flex:0 0 52px;text-align:right;font-size:13px;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;padding-top:3px;
+}
+.tl .time.blank{color:var(--line)}
+.tl .body{flex:1 1 auto;border-left:2px solid var(--line);padding:0 0 16px 14px;position:relative}
+.tl>li:last-child .body{border-color:transparent;padding-bottom:0}
+.tl .body::before{
+  content:"";position:absolute;left:-6px;top:8px;width:10px;height:10px;border-radius:50%;
+  background:var(--card);border:2px solid var(--accent);
+}
+.tl .what{font-weight:700}
+.tl .note{font-size:14px;color:var(--ink-soft)}
+
+/* ---- tags & links ---- */
+.tag{
+  display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:7px;
+  margin:0 4px 4px 0;white-space:nowrap;
+}
+.tag.book{background:var(--good-soft);color:var(--good)}
+.tag.stroll{background:var(--accent-soft);color:var(--accent)}
+.tag.check{background:var(--warm-soft);color:var(--warm)}
+a{color:var(--accent)}
+.map{
+  display:inline-block;font-size:13px;font-weight:700;text-decoration:none;
+  border:1px solid var(--line);border-radius:9px;padding:5px 11px;margin:6px 6px 0 0;
+  color:var(--accent);background:var(--paper);
+}
+
+/* ---- collapsible ---- */
+details{border:1px solid var(--line);border-radius:14px;background:var(--card);margin:0 0 12px;box-shadow:var(--shadow);overflow:hidden}
+details>summary{
+  padding:14px 16px;cursor:pointer;font-weight:700;list-style:none;
+  display:flex;align-items:center;gap:9px;
+}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"＋";margin-left:auto;color:var(--ink-soft);font-weight:400}
+details[open]>summary::after{content:"－"}
+details>summary .n{
+  flex:0 0 24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;font-size:13px;
+}
+.dbody{padding:0 16px 16px;border-top:1px solid var(--line);margin-top:-1px;padding-top:14px}
+.dbody h4{font-size:14px;margin:14px 0 6px;color:var(--warm)}
+.dbody h4:first-child{margin-top:0}
+.dbody p{margin:0 0 8px}
+.dbody ul{margin:0 0 8px;padding-left:1.35em}
+
+/* ---- callout ---- */
+.note-box{
+  background:var(--accent-soft);border-radius:12px;padding:13px 15px;margin:0 0 12px;
+  font-size:14px;line-height:1.65;
+}
+.note-box.warm{background:var(--warm-soft)}
+.note-box strong{display:block;margin-bottom:3px}
+.note-box p{margin:0 0 6px}
+.note-box p:last-child{margin:0}
+.note-box ul{margin:4px 0 0;padding-left:1.3em}
+
+/* ---- overview table ---- */
+.ov{width:100%;border-collapse:collapse;font-size:14px}
+.ov td{padding:11px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.ov tr:last-child td{border-bottom:0}
+.ov .d{white-space:nowrap;font-weight:700;width:1%;padding-right:12px;color:var(--accent)}
+.ov .h{color:var(--ink-soft);font-size:13px}
+.ov a{text-decoration:none;color:inherit}
+
+footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-soft)}
+.top{
+  position:fixed;right:16px;bottom:16px;width:44px;height:44px;border-radius:50%;
+  background:var(--accent);color:#fff;border:0;font-size:18px;box-shadow:var(--shadow);
+  display:none;place-items:center;cursor:pointer;z-index:9;
+}
+.top.show{display:grid}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>2026 東京</h1>
+    <p class="sub">9/20 – 9/25 · 六天五夜 · 豐洲 → 大宮 → 街區散步 → 迪士尼</p>
+    <p id="cd"></p>
+  </header>
+
+  <nav><div class="pills" id="pills"></div></nav>
+
+  <main id="panels"></main>
+
+  <footer>
+    <p>行程頁離線可用：手機用 Safari 開這個網址 → 分享 → 加入主畫面。<br>
+    內容為個人行程筆記，營業時間與票價請以官方公告為準。</p>
+  </footer>
+</div>
+<button class="top" id="top" aria-label="回到頂端">↑</button>
+
+<script>
+const G = q => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+
+const TRIP = [
+  /* ============ 總覽 ============ */
+  {
+    id:"ov", tab:"總覽", tabSub:"6 天",
+    title:"行程總覽",
+    meta:"星宇航空來回 · 前三晚豐洲、後兩晚迪士尼",
+    html:`
+      <div class="card">
+        <table class="ov">
+          <tr><td class="d"><a href="#!d1">9/20 日</a></td><td><a href="#!d1"><b>抵達東京 · 豐洲 LaLaport</b><div class="h">三井花園飯店 豐洲普米爾</div></a></td></tr>
+          <tr><td class="d"><a href="#!d2">9/21 一</a></td><td><a href="#!d2"><b>大宮 鐵道博物館</b><div class="h">三井花園飯店 豐洲普米爾</div></a></td></tr>
+          <tr><td class="d"><a href="#!d3">9/22 二</a></td><td><a href="#!d3"><b>街區散步（三選一）</b><div class="h">清澄白河 / 藏前 / 二子玉川</div></a></td></tr>
+          <tr><td class="d"><a href="#!d4">9/23 三</a></td><td><a href="#!d4"><b>迪士尼海洋（半日）</b><div class="h">換住迪士尼樂園飯店</div></a></td></tr>
+          <tr><td class="d"><a href="#!d5">9/24 四</a></td><td><a href="#!d5"><b>迪士尼樂園（全日）</b><div class="h">迪士尼樂園飯店</div></a></td></tr>
+          <tr><td class="d"><a href="#!d6">9/25 五</a></td><td><a href="#!d6"><b>返程</b><div class="h">12:30 租車前往機場 · 16:20 起飛</div></a></td></tr>
+        </table>
+      </div>
+
+      <div class="note-box warm">
+        <strong>⚠️ 出發前要確認的事</strong>
+        <ul>
+          <li><b>機場是成田還是羽田</b> — 影響 Day 1 計程車車程與 Day 6 出發時間</li>
+          <li><b>迪士尼住哪一間飯店</b> — 大飯店 / 觀海景 / 大使，接駁與步行距離差很多</li>
+          <li><b>9/23 達菲秀餐廳的正式店名</b> — 好在 App 上找入口</li>
+          <li><b>9/24 北齋 / Easter cafe 的時段</b> — 目前記錄是午晚各二選一</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary><span class="n">👶</span>推車與親子重點</summary>
+        <div class="dbody">
+          <p>這趟有一個 3 歲和一個未滿 1 歲，雙人推車是主要考量。</p>
+          <h4>地鐵</h4>
+          <ul>
+            <li>大江戶線、半藏門線、副都心線等較新的線電梯大、月台寬，轉乘輕鬆。</li>
+            <li>老站（銀座、東京、新宿）電梯遠又要繞，帶推車盡量避開當轉乘點。</li>
+            <li>出站前先查電梯出口編號，日本站內指標寫「エレベーター」。</li>
+          </ul>
+          <h4>票</h4>
+          <ul>
+            <li>6 歲以下不用票，可直接跟著大人刷卡進站。</li>
+            <li>Suica / PASMO 全程刷就好，JR 普通車不用劃位。</li>
+          </ul>
+          <h4>迪士尼</h4>
+          <ul>
+            <li>推車可推進園區，遊樂設施旁有推車停放區；建議掛個好認的識別物。</li>
+            <li>嬰兒室（Baby Center）有熱水、尿布台、哺乳室，園內各區都有。</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="n">🎢</span>迪士尼 DPA / Standby Pass 小抄</summary>
+        <div class="dbody">
+          <p>兩天都要搶，時機比手速重要。</p>
+          <h4>進園前</h4>
+          <ul>
+            <li>前一晚就把東京迪士尼官方 App 更新好、登入好、票券綁好（全家人的都綁在同一支手機）。</li>
+            <li>確認手機有網路（漫遊或 eSIM）。園內 Wi-Fi 搶票時不穩。</li>
+          </ul>
+          <h4>入園後</h4>
+          <ul>
+            <li><b>DPA（付費，一次一張）</b>：進閘門後立刻開搶。9/23 目標是冰雪奇緣或 Toy Story；9/24 是白天的 show。</li>
+            <li><b>Standby Pass（免費）</b>：搶商店入場券，熱門商店（尤其達菲周邊）沒券進不去。</li>
+            <li>一張用掉（或時段過了）才能抽下一張，所以排序要先想好。</li>
+          </ul>
+          <h4>帶小孩的取捨</h4>
+          <ul>
+            <li>3 歲有身高限制的設施進不去，DPA 優先給「全家都能上」或「show」比較划算。</li>
+            <li>善用 Rider Switch（輪流照顧小孩，第二位大人不用重排）。</li>
+          </ul>
+        </div>
+      </details>
+    `
+  },
+
+  /* ============ Day 1 ============ */
+  {
+    id:"d1", tab:"9/20", tabSub:"Day 1", dow:"日", date:"2026-09-20",
+    title:"抵達東京 · 豐洲血拼",
+    meta:"住：三井花園飯店 豐洲普米爾",
+    html:`
+      <ul class="tl">
+        <li><div class="time">08:30</div><div class="body">
+          <div class="what">星宇航空 · 桃園 → 東京</div>
+          <div class="note">起飛。<span class="tag check">確認成田 or 羽田</span></div>
+        </div></li>
+        <li><div class="time">12:55</div><div class="body">
+          <div class="what">抵達東京</div>
+          <div class="note">入境＋行李＋推車組裝，實際出關大約要 40–60 分鐘。</div>
+        </div></li>
+        <li><div class="time blank">～</div><div class="body">
+          <div class="what">計程車 → 飯店</div>
+          <div class="note">帶雙人推車＋行李，計程車最省力。羽田約 30–40 分、成田約 70–90 分鐘。</div>
+        </div></li>
+        <li><div class="time blank">～</div><div class="body">
+          <div class="what">飯店休息一波</div>
+          <div class="note">三井花園飯店 豐洲普米爾。抵達時間大概 14:30–16:00，小孩先睡個午覺再出門。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('三井ガーデンホテル豊洲プレミア 東京')}">🗺 飯店地圖</a>
+        </div></li>
+        <li><div class="time blank">～</div><div class="body">
+          <div class="what">LaLaport TOYOSU 血拼</div>
+          <div class="note">從飯店走路可到，室內商場，下雨或熱都不怕，推車友善。<span class="tag stroll">推車 OK</span></div>
+          <a class="map" target="_blank" rel="noopener" href="${G('アーバンドック ららぽーと豊洲')}">🗺 LaLaport 豐洲</a>
+        </div></li>
+        <li><div class="time">18:00</div><div class="body">
+          <div class="what">晚餐 · Bubba Gump Shrimp</div>
+          <div class="note">LaLaport 豐洲店。<span class="tag book">已訂位（Wendy）</span>訂位號碼見手機速查。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('Bubba Gump Shrimp ららぽーと豊洲')}">🗺 餐廳地圖</a>
+        </div></li>
+      </ul>
+
+      <div class="note-box">
+        <strong>💡 Day 1 就這樣剛好</strong>
+        <p>12:55 落地、出關、進飯店已經耗掉大半天，加上時差跟小孩，第一天只排「飯店 → 走路到商場 → 吃飯」是對的，不要再加行程。</p>
+        <p>要先買的東西：便利商店的水跟嬰兒用品、飯店附近的藥妝。LaLaport 裡面都有。</p>
+      </div>
+    `
+  },
+
+  /* ============ Day 2 ============ */
+  {
+    id:"d2", tab:"9/21", tabSub:"Day 2", dow:"一", date:"2026-09-21",
+    title:"大宮 鐵道博物館",
+    meta:"住：三井花園飯店 豐洲普米爾",
+    html:`
+      <div class="card">
+        <h3>🚆 鐵道博物館（大宮）</h3>
+        <p>3 歲鐵道迷的主場。實車展示、模擬駕駛、巨大鐵道模型，室內為主，一整天都待得住。</p>
+        <a class="map" target="_blank" rel="noopener" href="${G('鉄道博物館 埼玉県さいたま市大宮')}">🗺 博物館地圖</a>
+        <a class="map" target="_blank" rel="noopener" href="https://www.railway-museum.jp/">🎫 官網</a>
+      </div>
+
+      <details open>
+        <summary><span class="n">🚇</span>交通：豐洲 → 大宮 → 鐵道博物館</summary>
+        <div class="dbody">
+          <h4>建議路線：只轉一次，推車最輕鬆</h4>
+          <ol>
+            <li><b>豐洲 → 池袋</b>　東京 Metro 有樂町線直達，約 28 分鐘，不用轉車。</li>
+            <li><b>池袋 → 大宮</b>　JR 湘南新宿線 或 埼京線，約 25–30 分鐘。刷 Suica / PASMO，不用劃位。</li>
+            <li><b>大宮 → 鐵道博物館</b>　轉 New Shuttle（埼玉新都市交通），一站約 3 分鐘，下車走一下就到。</li>
+          </ol>
+          <div class="note-box warm" style="margin:12px 0">
+            <strong>⚠️ 原本記的路線要修一下</strong>
+            <p>行程表上寫「有樂町轉 JR 上野東京線／湘南新宿線到大宮」— 但 JR 有樂町站的月台只有山手線和京濱東北線，<b>上野東京線和湘南新宿線都不停有樂町</b>。從有樂町要先搭一站到東京站或上野站才能轉。</p>
+            <p>所以改走池袋（有樂町線同一台車直接坐到底）會比較順。當天還是用 Google Maps 或 Yahoo! 乗換案内 再確認一次班次。</p>
+          </div>
+          <h4>備案</h4>
+          <ul>
+            <li><b>計程車到東京車站</b>，再直接搭 JR（上野東京線／高崎線／宇都宮線）到大宮，約 30 分鐘。東京站很大，帶推車要留找月台的時間。</li>
+            <li>趕時間可搭新幹線 東京 → 大宮，只要 25 分鐘，但要另外買票。</li>
+          </ul>
+        </div>
+      </details>
+
+      <ul class="tl">
+        <li><div class="time blank">早上</div><div class="body">
+          <div class="what">出發前往大宮</div>
+          <div class="note">單程約 1 小時，建議 9:00 前出門，博物館一開門就進去人最少。</div>
+        </div></li>
+        <li><div class="time blank">全天</div><div class="body">
+          <div class="what">鐵道博物館</div>
+          <div class="note">館內有餐廳跟便當賣場（有名的是可以在退役車廂裡吃便當），午餐不用出去找。</div>
+        </div></li>
+        <li><div class="time">19:00</div><div class="body">
+          <div class="what">晚餐 · Aloha Table（LaLaport 豐洲）</div>
+          <div class="note"><span class="tag book">已訂位（WeiShan）</span>訂位號碼見手機速查。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('Aloha Table ららぽーと豊洲')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://cht.lalaport-toyosu.alohatable.com/#menu">📋 菜單</a>
+        </div></li>
+        <li><div class="time blank">備案</div><div class="body">
+          <div class="what">Royal Garden Cafe</div>
+          <div class="note">如果回程延誤或小孩狀況不好的第二選擇。</div>
+          <a class="map" target="_blank" rel="noopener" href="https://tw.royal-gardencafe.com/reservation/">📋 訂位頁</a>
+        </div></li>
+      </ul>
+
+      <div class="note-box">
+        <strong>💡 提醒</strong>
+        <p>去大宮單程一小時，晚餐訂 19:00 在飯店旁的 LaLaport，所以下午 17:00 左右就要往回走，抓一下時間。</p>
+      </div>
+    `
+  },
+
+  /* ============ Day 3 ============ */
+  {
+    id:"d3", tab:"9/22", tabSub:"Day 3", dow:"二", date:"2026-09-22",
+    title:"街區散步 · 三選一",
+    meta:"住：三井花園飯店 豐洲普米爾",
+    html:`
+      <div class="note-box">
+        <strong>🚶 今天挑一個街區慢慢走</strong>
+        <p>三個都是大人有咖啡、小孩有公園的組合，都從豐洲出發、轉一次車。點開看細節。</p>
+      </div>
+
+      <details>
+        <summary><span class="n">1</span>清澄白河 · 藍瓶咖啡大本營</summary>
+        <div class="dbody">
+          <p>原本是安靜的下町住宅區，現在進駐了幾十家極具設計感的獨立咖啡廳與雜貨店。想看現代、文青、舒服的東京街道就是這裡。</p>
+          <h4>🚇 怎麼去</h4>
+          <p>豐洲站搭<b>有樂町線</b> 1 站到<b>月島站</b>，原站轉<b>大江戶線</b>直達<b>清澄白河站</b>，全程約 15 分鐘。</p>
+          <p><span class="tag stroll">推車友善</span>月島和大江戶線都是相對新、規劃很好的車站，電梯超級大，推兩台車轉乘完全無壓力。</p>
+          <h4>☕ 大人</h4>
+          <ul>
+            <li><b>Blue Bottle Coffee 日本旗艦店</b>就在這，店內挑高極高、空間超大，推車進去喝杯手沖非常舒服。</li>
+            <li>街道寬敞安靜，馬路和人行道都很寬，完全沒有傳統觀光區的嘈雜。</li>
+          </ul>
+          <h4>👶 小孩</h4>
+          <ul>
+            <li><b>清澄庭園</b>就在咖啡廳旁邊，大水池可以看大烏龜和鴨子，3 歲會瘋狂。</li>
+            <li>再往前走一點，<b>木場公園</b>（東京都現代美術館旁）有東京數一數二大的超強戶外兒童遊樂場，有盪鞦韆和溜滑梯。</li>
+          </ul>
+          <a class="map" target="_blank" rel="noopener" href="${G('Blue Bottle Coffee 清澄白河 ロースタリー')}">🗺 藍瓶咖啡</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('清澄庭園 東京')}">🗺 清澄庭園</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('木場公園 冒険広場 東京')}">🗺 木場公園</a>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="n">2</span>藏前 · 東京的小巴黎</summary>
+        <div class="dbody">
+          <p>就在淺草的隔壁站，但氣氛跟淺草完全不同。以前是傳統皮革和玩具批發的小街，現在轉型成全東京最紅的「職人選物與獨立咖啡街」，街頭巷尾充滿驚喜。</p>
+          <h4>🚇 怎麼去</h4>
+          <p>豐洲站搭<b>有樂町線</b> 2 站到<b>新富町站</b>，走路轉<b>東銀座站</b>，搭<b>淺草線</b>直達<b>藏前站</b>。</p>
+          <p><span class="tag check">注意</span>新富町 → 東銀座是<b>站外步行</b>轉乘（約 5 分鐘），帶雙人推車要走一段地面。不想走的話可以改從豐洲搭計程車直接過去，車程約 20 分鐘。</p>
+          <h4>☕ 大人</h4>
+          <ul>
+            <li>街道非常安靜，像在歐洲小鎮。</li>
+            <li><b>Dandelion Chocolate</b>（全東京最棒的巧克力名店）店內空間很大、工業風、有沙發座，點杯熱巧克力大人超療癒。</li>
+            <li>還有許多筆記本、香氛的文青職人小店。</li>
+          </ul>
+          <h4>👶 小孩</h4>
+          <ul>
+            <li><b>隅田川露台步道</b>規劃了完美的無障礙坡道，可以推著雙人推車沿著河岸散步，迎面就是巨大的晴空塔，拍照超漂亮。</li>
+            <li>鄰近淺草，新大樓和咖啡廳對嬰兒車都很習慣，沿途也有不少社區小公園有溜滑梯。</li>
+          </ul>
+          <a class="map" target="_blank" rel="noopener" href="${G('Dandelion Chocolate 蔵前 東京')}">🗺 Dandelion</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('隅田川テラス 蔵前')}">🗺 隅田川露台</a>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="n">3</span>二子玉川 · 東京媽媽票選 No.1</summary>
+        <div class="dbody">
+          <p>如果清澄白河是「文青下町」，二子玉川就是「時髦的高級住宅區」。緊鄰多摩川，近年規劃得非常完美，是全東京公認對推車、親子最友善的天堂。</p>
+          <h4>🚇 怎麼去</h4>
+          <p>豐洲站搭<b>有樂町線</b>到<b>永田町站</b>，原站轉<b>半藏門線</b>（直通東急田園都市線）直達<b>二子玉川站</b>，全程約 45 分鐘。</p>
+          <p><span class="tag stroll">推車友善</span>全站有無障礙電梯。電車後半段會開到高架上，視野變好，3 歲看窗外風景會很興奮。</p>
+          <h4>☕ 大人</h4>
+          <ul>
+            <li>車站出來就是<b>二子玉川 Rise</b> 商場。</li>
+            <li>最厲害的是<b>蔦屋家電</b>，把書店、高檔設計家電、植物店和咖啡廳結合在一起，空間極大、美得像藝術館，可以推著車在裡面一邊喝咖啡一邊逛。</li>
+          </ul>
+          <h4>👶 小孩</h4>
+          <ul>
+            <li>商場二樓有設計完美的空中綠色步道，一整路都是平地，完全沒有階梯。順著走 10 分鐘就到<b>二子玉川公園</b>。</li>
+            <li>公園內有大片面向多摩川的草皮，<b>可以看到電車過鐵橋</b>，3 歲鐵道迷會瘋狂。</li>
+            <li>還有幼兒專屬的遊樂場，不到 1 歲的寶寶也可以坐在野餐墊上吹風。</li>
+          </ul>
+          <a class="map" target="_blank" rel="noopener" href="${G('二子玉川ライズ 蔦屋家電')}">🗺 蔦屋家電</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('二子玉川公園 東京')}">🗺 二子玉川公園</a>
+        </div>
+      </details>
+
+      <div class="note-box warm">
+        <strong>🤔 如果要我選</strong>
+        <p><b>清澄白河</b>。轉乘最輕鬆（15 分鐘、電梯大）、咖啡庭園遊樂場全在走路範圍內，而且 Day 2 已經玩了一整天鐵道，換個口味剛好。</p>
+        <p>如果 3 歲還想看電車，<b>二子玉川</b>的高架電車＋草皮看電車過橋無人能敵，代價是單程 45 分鐘。<b>藏前</b>景色最美但要站外步行轉乘，雙人推車最累。</p>
+      </div>
+    `
+  },
+
+  /* ============ Day 4 ============ */
+  {
+    id:"d4", tab:"9/23", tabSub:"Day 4", dow:"三", date:"2026-09-23",
+    title:"迪士尼海洋（半日）",
+    meta:"住：迪士尼樂園飯店（換飯店）",
+    html:`
+      <ul class="tl">
+        <li><div class="time blank">上午</div><div class="body">
+          <div class="what">豐洲退房 → 移動到舞濱</div>
+          <div class="note">建議：豐洲搭<b>有樂町線</b> 2 站到<b>新木場</b>，轉 <b>JR 京葉線</b>到<b>舞濱</b>，約 20 分鐘就到。<br>
+          帶大行李＋雙人推車的話，計程車直送飯店會輕鬆很多（約 30 分鐘）。</div>
+        </div></li>
+        <li><div class="time blank">～</div><div class="body">
+          <div class="what">飯店寄放行李</div>
+          <div class="note">先把行李丟給飯店（不用等到 check-in 時間），人直接進園。<span class="tag check">確認是哪一間飯店</span></div>
+        </div></li>
+        <li><div class="time blank">中午</div><div class="body">
+          <div class="what">東京迪士尼海洋 · 半日遊</div>
+          <div class="note">進閘門後<b>立刻</b>開 App 搶票，順序見下方。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('東京ディズニーシー')}">🗺 迪士尼海洋</a>
+        </div></li>
+        <li><div class="time">19:15</div><div class="body">
+          <div class="what">晚餐 · 達菲秀餐廳</div>
+          <div class="note"><span class="tag book">已訂位</span>有達菲秀的餐廳，建議提早 20 分鐘到。<span class="tag check">確認正式店名</span></div>
+        </div></li>
+      </ul>
+
+      <div class="card">
+        <h3>🎯 進園後的搶票順序</h3>
+        <ol>
+          <li><b>DPA</b> — 冰雪奇緣 或 Toy Story。只能先抽一個，先決定好要哪個再開 App。</li>
+          <li><b>Standby Pass</b> — 商店入場券（達菲周邊的商店沒券進不去）。</li>
+          <li>抽完再看表演的抽選。</li>
+        </ol>
+        <p style="margin-top:10px">半日遊時間很緊，DPA 的時段要挑在晚餐 19:15 之前，不要撞到。</p>
+      </div>
+
+      <div class="note-box warm">
+        <strong>⚠️ 今天最容易出錯的地方</strong>
+        <ul>
+          <li>退房、移動、寄行李會吃掉一個上午，實際入園可能是中午過後 — 半日遊的期待值不要太高，挑 2–3 個一定要玩的就好。</li>
+          <li>晚餐 19:15 是今天唯一的硬時段，其他全部排在它前面。</li>
+          <li>飯店 check-in 可以吃完晚餐再回去辦。</li>
+        </ul>
+      </div>
+    `
+  },
+
+  /* ============ Day 5 ============ */
+  {
+    id:"d5", tab:"9/24", tabSub:"Day 5", dow:"四", date:"2026-09-24",
+    title:"迪士尼樂園（全日）",
+    meta:"住：迪士尼樂園飯店",
+    html:`
+      <ul class="tl">
+        <li><div class="time blank">提早</div><div class="body">
+          <div class="what">提早入園！</div>
+          <div class="note">住園區飯店有提早入園的資格，這是今天最大的優勢，一定要用到。前一晚先確認集合時間跟入口。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('東京ディズニーランド')}">🗺 迪士尼樂園</a>
+        </div></li>
+        <li><div class="time blank">入園</div><div class="body">
+          <div class="what">開搶</div>
+          <div class="note"><b>DPA</b> 搶白天的 show；<b>Standby Pass</b> 搶商店入場券。</div>
+        </div></li>
+        <li><div class="time">11:30</div><div class="body">
+          <div class="what">午餐 · 北齋</div>
+          <div class="note">日式定食，小孩比較好接受。<span class="tag book">與下面二選一</span></div>
+          <a class="map" target="_blank" rel="noopener" href="${G('レストラン北齋 東京ディズニーランド')}">🗺 北齋</a>
+        </div></li>
+        <li><div class="time">11:50</div><div class="body">
+          <div class="what">午餐 · Easter cafe</div>
+          <div class="note">午餐的另一個選擇。<span class="tag check">確認正式店名</span></div>
+        </div></li>
+        <li><div class="time blank">下午</div><div class="body">
+          <div class="what">迪士尼剪影</div>
+          <div class="note">現場手工剪影，小孩的側臉剪影很值得帶回家。要排隊，建議下午人少時去。</div>
+        </div></li>
+        <li><div class="time">16:20</div><div class="body">
+          <div class="what">晚餐 · 北齋</div>
+          <div class="note"><span class="tag book">與下面二選一</span></div>
+        </div></li>
+        <li><div class="time">17:50</div><div class="body">
+          <div class="what">晚餐 · Easter cafe</div>
+          <div class="note">晚餐的另一個選擇。</div>
+        </div></li>
+      </ul>
+
+      <div class="note-box">
+        <strong>💡 餐廳時段</strong>
+        <p>行程表記的是午餐（11:30 北齋 / 11:50 Easter cafe）和晚餐（16:20 北齋 / 17:50 Easter cafe）各二選一。出發前確認一下實際訂了哪幾個，訂位資訊在手機速查裡。</p>
+      </div>
+
+      <div class="note-box warm">
+        <strong>👶 全日在園區的節奏</strong>
+        <ul>
+          <li>中午最熱最擠，安排室內設施或餐廳，順便讓小的睡午覺。</li>
+          <li>16:20 的晚餐其實是好事 — 吃飽還有體力看晚上的遊行。</li>
+          <li>住園區飯店的好處是隨時能回房休息，卡關就回去躺一小時再出來。</li>
+        </ul>
+      </div>
+    `
+  },
+
+  /* ============ Day 6 ============ */
+  {
+    id:"d6", tab:"9/25", tabSub:"Day 6", dow:"五", date:"2026-09-25",
+    title:"返程",
+    meta:"16:20 東京 → 台北",
+    html:`
+      <ul class="tl">
+        <li><div class="time">08:50</div><div class="body">
+          <div class="what">迪士尼早餐</div>
+          <div class="note">最後一餐，慢慢吃。吃完回房收行李。</div>
+        </div></li>
+        <li><div class="time blank">～</div><div class="body">
+          <div class="what">退房、行李寄放</div>
+          <div class="note">退房後行李可以先寄櫃檯，最後在園區或飯店逛一下買伴手禮。</div>
+        </div></li>
+        <li><div class="time">12:30</div><div class="body">
+          <div class="what">預定租車 前往機場</div>
+          <div class="note"><span class="tag book">已預約</span>先確認上車地點是飯店大廳哪一側，並跟司機確認航廈。</div>
+        </div></li>
+        <li><div class="time">16:20</div><div class="body">
+          <div class="what">星宇航空 · 東京 → 台北</div>
+          <div class="note"><span class="tag check">確認成田 or 羽田</span>國際線建議起飛前 2.5 小時到，也就是 13:50 前進航廈。</div>
+        </div></li>
+        <li><div class="time blank">晚間</div><div class="body">
+          <div class="what">抵達台灣 · 回家休息嚕～</div>
+        </div></li>
+      </ul>
+
+      <div class="note-box warm">
+        <strong>⏱ 時間夠不夠？</strong>
+        <p>12:30 從舞濱出發：<b>羽田</b>約 40 分鐘，13:10 到，非常寬鬆。<b>成田</b>約 70–90 分鐘，14:00 左右到，離 16:20 起飛還有 2 小時 20 分，帶小孩排隊會有點趕。</p>
+        <p>如果是成田，考慮把租車提早到 11:30–12:00。</p>
+      </div>
+
+      <div class="note-box">
+        <strong>🧳 最後檢查</strong>
+        <ul>
+          <li>護照、登機證、退稅單</li>
+          <li>飯店房間的充電器、浴室的東西</li>
+          <li>推車要不要託運（登機門託運通常比較安全）</li>
+          <li>剩下的日圓零錢在機場便利商店花掉</li>
+        </ul>
+      </div>
+    `
+  }
+];
+
+/* ---------- render ---------- */
+const pills = document.getElementById('pills');
+const panels = document.getElementById('panels');
+const todayISO = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD, local
+
+TRIP.forEach((d, i) => {
+  const b = document.createElement('button');
+  b.className = 'pill';
+  b.dataset.id = d.id;
+  b.innerHTML = `<b>${d.tab}</b>${d.tabSub}${d.dow ? ' ' + d.dow : ''}`;
+  if (d.date === todayISO) b.classList.add('today');
+  b.onclick = () => show(d.id, true);
+  pills.appendChild(b);
+
+  const p = document.createElement('section');
+  p.className = 'panel';
+  p.id = d.id;
+  p.innerHTML = `<div class="dayhead"><h2>${d.title}</h2><p class="meta">${d.meta}</p></div>${d.html}`;
+  panels.appendChild(p);
+});
+
+function show(id, scroll) {
+  TRIP.forEach(d => {
+    document.getElementById(d.id).classList.toggle('on', d.id === id);
+  });
+  [...pills.children].forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  if (history.replaceState) history.replaceState(null, '', '#!' + id);
+  if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 只捲 nav 自己，不要動到整頁（載入時頁面亂跳很煩）
+  const active = pills.querySelector('.pill.on');
+  if (active) {
+    const nav = pills.parentElement;
+    const left = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+    nav.scrollTo({ left: Math.max(0, left), behavior: scroll ? 'smooth' : 'auto' });
+  }
+}
+
+/* 預設開哪一頁：旅程中開今天，其他時候開總覽 */
+function defaultPanel() {
+  const fromHash = location.hash.replace(/^#!?/, '');
+  if (fromHash && TRIP.some(d => d.id === fromHash)) return fromHash;
+  const today = TRIP.find(d => d.date === todayISO);
+  return today ? today.id : 'ov';
+}
+show(defaultPanel(), false);
+
+/* 總覽表格的內部連結 */
+panels.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#!"]');
+  if (!a) return;
+  e.preventDefault();
+  show(a.getAttribute('href').replace(/^#!?/, ''), true);
+});
+
+/* 倒數 / 今天是第幾天 */
+(function () {
+  const el = document.getElementById('cd');
+  const start = new Date('2026-09-20T00:00:00+09:00');
+  const days = Math.ceil((start - new Date()) / 86400000);
+  const inTrip = TRIP.find(d => d.date === todayISO);
+  if (inTrip) el.innerHTML = `<span class="countdown">今天是 ${inTrip.tabSub} · ${inTrip.title}</span>`;
+  else if (days > 0) el.innerHTML = `<span class="countdown">還有 ${days} 天出發</span>`;
+  else el.innerHTML = `<span class="countdown">旅程已結束 · 回顧</span>`;
+})();
+
+/* 回到頂端 */
+const topBtn = document.getElementById('top');
+topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+addEventListener('scroll', () => topBtn.classList.toggle('show', scrollY > 400), { passive: true });
+
+/* service worker */
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.DS_Store
+__pycache__/
+_probe.html
+
+# 訂位號碼等敏感資訊不進版控（這個 repo 是公開的）
+*訂位*
+*private*
+notes-private*
