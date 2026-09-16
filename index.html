@@ -226,6 +226,9 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);font-si
     <p>這一頁的內容來自上面那份 Sheet。<b>Sheet 是唯一的事實來源</b> — 行程有變動先改 Sheet，再更新這一頁。</p>
     <p>行程頁離線可用：手機用 Safari 開這個網址 → 分享 → 加入主畫面。<br>
     內容為個人行程筆記，營業時間與票價請以官方公告為準。</p>
+    <p style="margin-top:12px">覺得內容沒更新就按這個（加入主畫面後沒有重新整理鍵）：</p>
+    <button class="themebtn" id="refresh" style="margin-top:2px">🔄 重新整理</button>
+    <p id="refresh-hint" style="margin-top:8px"></p>
   </footer>
 </div>
 <button class="top" id="top" aria-label="回到頂端">↑</button>
@@ -300,6 +303,31 @@ const TRIP = [
         <p>身高對照表、四種通行證、<b>遊行與表演陣容</b>、<b>萬聖節與限定商品</b>都放在右邊最後一個
         <a href="#!dis"><b>「迪士尼」頁籤</b></a>。當天的搶票順序寫在 Day 4 和 Day 5 裡。</p>
       </div>
+
+<details>
+        <summary><span class="n">🛒</span>買東西：電器、藥妝、生活用品</summary>
+        <div class="dbody">
+          <h4>LaLaport 豐洲裡面</h4>
+          <ul>
+            <li><b>ノジマ</b>（豊洲3 3F）— 唯一的家電店。中型連鎖，小家電、配件、耳機夠用，<b>但規模跟 BIC／Yodobashi 差一個等級</b>。</li>
+            <li><b>ハンズ</b>（豊洲1 NORTH PORT 1F）— 生活雜貨、文具、旅行用品</li>
+            <li><b>無印良品</b>（豊洲1 SOUTH PORT 2F）</li>
+            <li><b>ザ・ダイソー</b>（豊洲1 CENTER PORT 3F）— 百元店</li>
+            <li><b>ウエルシア</b> 藥妝（豊洲2 1F、豊洲3 B1）</li>
+            <li><b>成城石井</b>（豊洲3 B1）超市、<b>カルディ</b>（豊洲1 SOUTH PORT 1F）進口食品、
+                <b>富澤商店</b>（豊洲1 SOUTH PORT 2F）烘焙食材 — 買零食伴手禮</li>
+          </ul>
+          <a class="map" href="shops.html">🏬 全部 214 家店</a>
+
+          <h4>想逛大型電器店 → BIC Camera 有楽町店</h4>
+          <p><b>豐洲搭有樂町線直達有樂町，約 7 分鐘，不用轉車</b>；出站（日比谷口／D4 出口）走 1 分鐘就到。
+          10:00–22:00 年中無休，可退稅。</p>
+          <p>這是從豐洲最方便的大型電器店 — 比跑秋葉原的 Yodobashi 省事太多（那邊要轉車）。
+          Day 3 街區散步那天，或任何一天晚餐後都可以順路去。</p>
+          <a class="map" target="_blank" rel="noopener" href="${G('ビックカメラ 有楽町店')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.biccamera.com/bc/i/shop/shoplist/shop014.jsp">📷 官方店舖頁</a>
+        </div>
+      </details>
 
       <details>
         <summary><span class="n">👶</span>兩個 3 歲的親子重點</summary>
@@ -1137,6 +1165,37 @@ panels.addEventListener('click', e => {
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     if (document.documentElement.dataset.theme === 'system') apply('system');
   });
+})();
+
+/* 重新整理：加入主畫面後沒有網址列，所以自己給一顆。
+   做法很土：清掉快取 → 叫 SW 去檢查新版 → 重新載入。
+   注意：沒網路時不清快取，否則會把離線內容弄掉。 */
+(function () {
+  const btn = document.getElementById('refresh');
+  if (!btn) return;
+  const hint = document.getElementById('refresh-hint');
+
+  btn.onclick = async () => {
+    if (!navigator.onLine) {
+      if (hint) hint.textContent = '目前沒有網路，先不清快取（免得離線內容不見）。有網路再按。';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = '更新中…';
+    try {
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) await reg.update().catch(() => {});
+      }
+    } catch (e) { /* 清不掉也照樣重載，至少會走網路 */ }
+    const u = new URL(location.href);
+    u.searchParams.set('_r', Date.now().toString(36));
+    location.replace(u.toString());
+  };
 })();
 
 /* 回到頂端 */
