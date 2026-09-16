@@ -1762,7 +1762,8 @@ panels.addEventListener('click', e => {
     });
   }
 
-  /* 頁籤位置小，只放圖示＋降雨機率；溫度在頁內那一行 */
+  /* 頁籤位置小：圖示＋降雨機率＋最高溫，一行擺完。
+     完整的溫度區間在頁內那一行。 */
   function paintPill(date, w, code) {
     const pill = document.querySelector(`.pill[data-date="${date}"]`);
     if (!pill) return;
@@ -1772,7 +1773,9 @@ panels.addEventListener('click', e => {
       span.className = 'pwx';
       pill.appendChild(span);
     }
-    span.textContent = w ? `${icon(code)} ${w.pop == null ? '–' : w.pop + '%'}` : '';
+    span.textContent = w
+      ? `${icon(code)} ${w.pop == null ? '–' : w.pop + '%'} ${Math.round(w.hi)}°`
+      : '';
   }
 
   const keys = Object.keys(PLACES);
