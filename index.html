@@ -92,6 +92,13 @@ nav::-webkit-scrollbar{display:none}
 .dayhead{margin:0 0 14px}
 .dayhead h2{font-size:21px;margin:0 0 6px;letter-spacing:-.01em}
 .dayhead .meta{font-size:14px;color:var(--ink-soft);margin:0}
+.wx{
+  display:inline-block;margin:8px 0 0;padding:5px 11px;border-radius:9px;
+  background:var(--accent-soft);color:var(--accent);
+  font-size:13.5px;font-weight:700;
+}
+.wx .sub{font-weight:400;opacity:.8}
+.wx.off{background:none;padding:5px 0;color:var(--ink-soft);font-weight:400}
 
 .card{
   background:var(--card);border:1px solid var(--line);border-radius:14px;
@@ -527,6 +534,10 @@ const TRIP = [
     title:"大宮 鐵道博物館",
     meta:"住：三井花園飯店 豐洲普米爾",
     html:`
+      <p style="font-size:13px;color:var(--ink-soft);margin:-6px 0 12px">
+        ※ 上面的天氣是東京灣沿岸（豐洲）。<b>大宮在內陸</b>，日溫差通常大一點，白天可能更熱、早晚更涼。
+      </p>
+
       <div class="card">
         <h3>🚆 鐵道博物館（大宮）<span class="t">10:00–17:00</span></h3>
         <p>兩個 3 歲的主場。實車展示、模擬駕駛、巨大鐵道模型，室內為主，一整天都待得住。館內有餐廳跟便當賣場（有名的是可以在退役車廂裡吃便當）。</p>
@@ -1563,6 +1574,13 @@ TRIP.forEach((d, i) => {
   p.className = 'panel';
   p.id = d.id;
   p.innerHTML = `<div class="dayhead"><h2>${d.title}</h2><p class="meta">${d.meta}</p></div>${d.html}`;
+  if (d.date) {
+    const w = document.createElement('div');
+    w.className = 'wx';
+    w.dataset.date = d.date;
+    w.textContent = '天氣查詢中…';
+    p.querySelector('.dayhead').appendChild(w);
+  }
   panels.appendChild(p);
 });
 
@@ -1684,6 +1702,78 @@ panels.addEventListener('click', e => {
   };
 })();
 
+
+/* ---------- 天氣預報 ----------
+   開頁面時向 Open-Meteo 抓一次（免 API key、支援 CORS），把每一天的
+   氣溫與降雨機率填進該日頁籤的標題下面。
+
+   刻意不進 service worker 快取 —— 預報會變，寫死或快取就是放過期資訊。
+   沒網路或抓失敗時就顯示一行提示加連結，絕不影響頁面其他部分。 */
+(function () {
+  const slots = [...document.querySelectorAll('.wx')];
+  if (!slots.length) return;
+
+  /* 用東京灣沿岸（豐洲）一個點就夠 —— 豐洲與舞濱相距約 12 公里，
+     對「要不要帶傘、穿什麼」不會改變判斷。Day 2 的大宮在內陸，另有註記。 */
+  const LAT = 35.655, LON = 139.795;
+
+  /* WMO weather code → 中文與圖示 */
+  const CODE = [
+    [[0], '☀️ 晴'], [[1], '🌤 晴時多雲'], [[2], '⛅ 多雲'], [[3], '☁️ 陰'],
+    [[45, 48], '🌫 霧'],
+    [[51, 53, 55, 56, 57], '🌦 毛毛雨'],
+    [[61, 63, 65, 66, 67], '🌧 雨'],
+    [[71, 73, 75, 77, 85, 86], '🌨 雪'],
+    [[80, 81, 82], '🌦 陣雨'],
+    [[95, 96, 99], '⛈ 雷雨'],
+  ];
+  const label = c => (CODE.find(x => x[0].includes(c)) || [null, ''])[1];
+
+  function fail() {
+    slots.forEach(s => {
+      s.className = 'wx off';
+      s.innerHTML = '天氣預報需要網路　'
+        + '<a target="_blank" rel="noopener" href="https://tenki.jp/forecast/3/16/4410/13108/">tenki.jp</a>';
+    });
+  }
+
+  const dates = slots.map(s => s.dataset.date).sort();
+  const url = 'https://api.open-meteo.com/v1/forecast'
+    + `?latitude=${LAT}&longitude=${LON}`
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+    + '&timezone=Asia%2FTokyo'
+    + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
+
+  fetch(url, { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => {
+      const dl = d.daily;
+      if (!dl || !dl.time) return fail();
+      const byDate = {};
+      dl.time.forEach((t, i) => {
+        byDate[t] = {
+          lo: dl.temperature_2m_min[i],
+          hi: dl.temperature_2m_max[i],
+          pop: dl.precipitation_probability_max[i],
+          code: dl.weather_code[i],
+        };
+      });
+      slots.forEach(s => {
+        const w = byDate[s.dataset.date];
+        if (!w || w.hi === null) {
+          s.className = 'wx off';
+          s.textContent = '這一天還沒有預報（超出可預報範圍）';
+          return;
+        }
+        s.className = 'wx';
+        s.innerHTML = `${Math.round(w.lo)}–${Math.round(w.hi)}°C`
+          + `　降雨 ${w.pop == null ? '–' : w.pop + '%'}`
+          + `　${label(w.code)}`
+          + '<span class="sub">　· 東京灣沿岸</span>';
+      });
+    })
+    .catch(fail);
+})();
 
 /* 回到頂端 */
 const topBtn = document.getElementById('top');
