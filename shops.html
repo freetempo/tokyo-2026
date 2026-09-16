@@ -171,6 +171,8 @@ footer a{color:var(--accent)}
       <a target="_blank" rel="noopener" href="https://mitsui-shopping-park.com/lalaport/toyosu/shopguide/">三井購物公園官方店家一覽</a>，
       點店名可開官方頁看營業時間。店家會變動，以現場與官網為準。</p>
     <p>要更新清單：在 repo 裡跑 <code>python3 tools/fetch-shops.py</code> 再跑 <code>python3 tools/build-sw.py</code>。</p>
+    <p style="margin-top:10px"><span id="ver">版本查詢中…</span></p>
+    <button class="themebtn" id="forceupdate" style="margin-top:6px">🔄 強制更新</button>
   </footer>
 </div>
 <button class="top" id="top" aria-label="回到頂端">↑</button>
@@ -391,9 +393,8 @@ const topBtn = document.getElementById('top');
 topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 addEventListener('scroll', () => topBtn.classList.toggle('show', scrollY > 500), { passive: true });
 
-if ('serviceWorker' in navigator) {
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
+/* service worker 與更新提示都在 update.js 裡 */
 </script>
+<script src="update.js" defer></script>
 </body>
 </html>

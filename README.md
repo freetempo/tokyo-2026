@@ -50,6 +50,21 @@
 - `<span class="tag book">已訂位</span>`、`tag stroll` 推車、`tag check` 待確認。
 - 地圖按鈕：`<a class="map" target="_blank" rel="noopener" href="${G('店名 地址')}">🗺 …</a>`，`G()` 會產 Google Maps 搜尋連結。官網連結用同一個 class，直接寫 `href`。
 
+## 更新機制（加入主畫面後沒有重新整理鍵）
+
+PWA 用 standalone 開啟時沒有網址列，所以沒有重新整理。這裡有三層：
+
+1. **network-first**　`sw.js` 對 `.html` / `.json` / `.js` 與 navigate 請求都先走網路、
+   失敗才退回快取；圖片與 icon 才是 cache-first。所以**有網路時開啟就是最新版**。
+2. **更新橫幅**　`update.js` 會比對 `version.json`（永遠 `no-store`）與目前 SW 回報的版本，
+   不一樣就在畫面下方跳「有新版本 → 立即更新」。切回前景時也會再檢查一次。
+3. **強制更新按鈕**　footer 的 🔄 會清掉所有 Cache Storage、換掉 SW，再帶一次性參數重新載入。
+   偵測失靈時的保險。
+
+footer 也會顯示目前版本與建置時間，可以直接對照。
+
+`version.json` 由 `tools/build-sw.py` 一起產生，**刻意不進快取清單**（否則會自我循環）。
+
 ## 深淺色
 
 右上角的按鈕循環切換 **跟隨系統 → 淺色 → 深色**，選擇記在 `localStorage` 的 `theme`。

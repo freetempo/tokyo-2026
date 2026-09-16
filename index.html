@@ -226,6 +226,11 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);font-si
     <p>這一頁的內容來自上面那份 Sheet。<b>Sheet 是唯一的事實來源</b> — 行程有變動先改 Sheet，再更新這一頁。</p>
     <p>行程頁離線可用：手機用 Safari 開這個網址 → 分享 → 加入主畫面。<br>
     內容為個人行程筆記，營業時間與票價請以官方公告為準。</p>
+    <p style="margin-top:10px">
+      <span id="ver">版本查詢中…</span><br>
+      加入主畫面後沒有重新整理按鈕，覺得內容沒更新就按這個：
+    </p>
+    <button class="themebtn" id="forceupdate" style="margin-top:6px">🔄 強制更新</button>
   </footer>
 </div>
 <button class="top" id="top" aria-label="回到頂端">↑</button>
@@ -1144,10 +1149,8 @@ const topBtn = document.getElementById('top');
 topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 addEventListener('scroll', () => topBtn.classList.toggle('show', scrollY > 400), { passive: true });
 
-/* service worker */
-if ('serviceWorker' in navigator) {
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
+/* service worker 與更新提示都在 update.js 裡 */
 </script>
+<script src="update.js" defer></script>
 </body>
 </html>

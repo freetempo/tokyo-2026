@@ -5,15 +5,18 @@
 
     python3 tools/build-sw.py
 """
+import datetime
 import hashlib
+import json
 import pathlib
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # 要離線快取的東西。tools/ 與 .git/ 不進去。
-PATTERNS = ("index.html", "shops.html", "shops.json",
+PATTERNS = ("index.html", "shops.html", "shops.json", "update.js",
             "manifest.webmanifest", "icons/*.png", "img/*")
 SKIP_DIRS = {".git", "tools"}
+SKIP_FILES = {"version.json"}
 
 
 def collect() -> list[pathlib.Path]:
@@ -22,7 +25,8 @@ def collect() -> list[pathlib.Path]:
         for p in sorted(ROOT.glob(pat)):
             if not p.is_file():
                 continue
-            if any(part in SKIP_DIRS for part in p.relative_to(ROOT).parts):
+            rel = p.relative_to(ROOT)
+            if any(part in SKIP_DIRS for part in rel.parts) or rel.name in SKIP_FILES:
                 continue
             files.append(p)
     return files
@@ -44,10 +48,15 @@ def main() -> int:
     listing = ",\n  ".join(f'"{a}"' for a in assets)
 
     sw = f"""// 由 tools/build-sw.py 產生，請不要手改。
-const CACHE = "tokyo2026-{version}";
+const VERSION = "{version}";
+const CACHE = "tokyo2026-" + VERSION;
 const ASSETS = [
   {listing}
 ];
+
+// 內容檔走 network-first：有網路一定看到最新版，沒網路才退回快取。
+// 圖片、icon、manifest 走 cache-first（很少變，而且要快）。
+const FRESH = /(\\.html|\\.json|\\.js|\\/)$/;
 
 self.addEventListener("install", e => {{
   e.waitUntil(
@@ -65,29 +74,58 @@ self.addEventListener("activate", e => {{
   );
 }});
 
-// 同網域的 GET 走 cache-first，離線也開得起來；快取沒有的就照常連網。
+self.addEventListener("message", e => {{
+  if (e.data === "VERSION") {{
+    e.source && e.source.postMessage({{ type: "VERSION", version: VERSION }});
+  }}
+  if (e.data === "SKIP_WAITING") self.skipWaiting();
+}});
+
 self.addEventListener("fetch", e => {{
-  const url = new URL(e.request.url);
-  if (e.request.method !== "GET" || url.origin !== location.origin) return;
-  e.respondWith(
-    caches.match(e.request, {{ ignoreSearch: true }}).then(hit => {{
-      if (hit) return hit;
-      return fetch(e.request)
+  const req = e.request;
+  const url = new URL(req.url);
+  if (req.method !== "GET" || url.origin !== location.origin) return;
+
+  const fresh = req.mode === "navigate" || FRESH.test(url.pathname);
+
+  if (fresh) {{
+    e.respondWith(
+      fetch(req)
         .then(res => {{
           if (res.ok && res.type === "basic") {{
             const copy = res.clone();
-            caches.open(CACHE).then(c => c.put(e.request, copy));
+            caches.open(CACHE).then(c => c.put(req, copy));
           }}
           return res;
         }})
-        .catch(() => caches.match("./"));
-    }})
+        .catch(() => caches.match(req, {{ ignoreSearch: true }})
+          .then(hit => hit || caches.match("./")))
+    );
+    return;
+  }}
+
+  e.respondWith(
+    caches.match(req, {{ ignoreSearch: true }}).then(hit => hit || fetch(req).then(res => {{
+      if (res.ok && res.type === "basic") {{
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(req, copy));
+      }}
+      return res;
+    }}))
   );
 }});
 """
     (ROOT / "sw.js").write_text(sw, encoding="utf-8")
+
+    # version.json 刻意不進快取清單，永遠走網路，頁面用它判斷有沒有新版
+    built = datetime.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M")
+    (ROOT / "version.json").write_text(
+        json.dumps({"version": version, "builtAt": built}, ensure_ascii=False),
+        encoding="utf-8")
+
     total = sum(p.stat().st_size for p in files)
     print(f"sw.js 已更新　版本 {version}　{len(assets)} 個項目　{total / 1024:.0f} KB")
+    print(f"version.json　{version}　{built}")
     return 0
 
 
