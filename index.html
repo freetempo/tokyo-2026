@@ -10,15 +10,35 @@
 <meta name="apple-mobile-web-app-title" content="東京 2026">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
+<script>
+/* 在畫面繪製前就決定主題，避免閃一下白／黑。預設淺色。 */
+(function(){
+  var t = "light";
+  try { t = localStorage.getItem("theme") || "light"; } catch (e) {}
+  document.documentElement.dataset.theme = t;
+})();
+</script>
 <style>
-:root{
+/* 淺色是預設值（不跟隨系統，除非使用者選「系統」） */
+:root, :root[data-theme="light"]{
   --paper:#f7f4ee; --card:#fff; --ink:#1e1c19; --ink-soft:#6a655d;
   --line:#e3ddd2; --accent:#1b4965; --accent-soft:#e8eef3;
   --warm:#c1502e; --warm-soft:#fbeae4; --good:#3f7d52; --good-soft:#e8f1ea;
   --shadow:0 1px 2px rgba(31,29,26,.06),0 4px 14px rgba(31,29,26,.05);
+  color-scheme:light;
 }
+/* 手動選深色 */
+:root[data-theme="dark"]{
+  --paper:#16151a; --card:#1f1e24; --ink:#eceae5; --ink-soft:#a09a90;
+  --line:#332f38; --accent:#7fb3d3; --accent-soft:#1e2a33;
+  --warm:#e88a68; --warm-soft:#33211b; --good:#7fba92; --good-soft:#1c2a20;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+/* 選「跟隨系統」時才看系統設定 */
+:root[data-theme="system"]{color-scheme:light dark}
 @media (prefers-color-scheme:dark){
-  :root{
+  :root[data-theme="system"]{
     --paper:#16151a; --card:#1f1e24; --ink:#eceae5; --ink-soft:#a09a90;
     --line:#332f38; --accent:#7fb3d3; --accent-soft:#1e2a33;
     --warm:#e88a68; --warm-soft:#33211b; --good:#7fba92; --good-soft:#1c2a20;
@@ -36,8 +56,16 @@ body{
 
 /* ---- header ---- */
 header{padding:28px 0 4px}
+.hrow{display:flex;align-items:flex-start;gap:12px}
+.hrow>div{flex:1 1 auto;min-width:0}
 h1{font-size:26px;line-height:1.3;margin:0 0 4px;letter-spacing:-.01em}
 .sub{color:var(--ink-soft);font-size:14px;margin:0}
+.themebtn{
+  flex:0 0 auto;margin-top:2px;border:1px solid var(--line);background:var(--card);
+  color:var(--ink-soft);border-radius:11px;padding:7px 11px;font:inherit;font-size:13px;
+  font-weight:700;cursor:pointer;line-height:1.3;white-space:nowrap;box-shadow:var(--shadow);
+}
+.themebtn:active{transform:scale(.96)}
 .countdown{
   display:inline-block;margin-top:12px;padding:5px 12px;border-radius:999px;
   background:var(--warm-soft);color:var(--warm);font-size:13px;font-weight:700;
@@ -161,8 +189,13 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);font-si
 <body>
 <div class="wrap">
   <header>
-    <h1>2026 東京</h1>
-    <p class="sub">9/20 – 9/25 · 六天五夜 · 豐洲 → 大宮 → 街區散步 → 迪士尼</p>
+    <div class="hrow">
+      <div>
+        <h1>2026 東京</h1>
+        <p class="sub">9/20 – 9/25 · 六天五夜 · 豐洲 → 大宮 → 街區散步 → 迪士尼</p>
+      </div>
+      <button class="themebtn" id="theme" aria-label="切換深淺色"></button>
+    </div>
     <p id="cd"></p>
   </header>
 
@@ -185,7 +218,7 @@ const TRIP = [
   {
     id:"ov", tab:"總覽", tabSub:"6 天",
     title:"行程總覽",
-    meta:"星宇航空來回 · 前三晚豐洲、後兩晚迪士尼",
+    meta:"星宇航空 JX800／JX803 成田來回 · 前三晚豐洲、後兩晚迪士尼",
     html:`
       <div class="card">
         <table class="ov">
@@ -201,11 +234,20 @@ const TRIP = [
       <div class="note-box warm">
         <strong>⚠️ 出發前要確認的事</strong>
         <ul>
-          <li><b>機場是成田還是羽田</b> — 影響 Day 1 計程車車程與 Day 6 出發時間</li>
           <li><b>迪士尼住哪一間飯店</b> — 大飯店 / 觀海景 / 大使，接駁與步行距離差很多</li>
           <li><b>9/23 達菲秀餐廳的正式店名</b> — 好在 App 上找入口</li>
           <li><b>9/24 北齋 / Easter cafe 的時段</b> — 目前記錄是午晚各二選一</li>
+          <li><b>Day 6 租車要不要提早</b> — 12:30 出發到成田只剩 2 小時 20 分，建議改 11:30–12:00</li>
         </ul>
+      </div>
+
+      <div class="card">
+        <h3>✈️ 航班</h3>
+        <table class="ov">
+          <tr><td class="d">9/20</td><td><b>JX800</b>　桃園 TPE 08:30 → 成田 NRT 12:55<div class="h">星宇航空 · A350-900</div></td></tr>
+          <tr><td class="d">9/25</td><td><b>JX803</b>　成田 NRT 16:20 → 桃園 TPE<div class="h">星宇航空 · 飛行時間約 3 小時 40 分</div></td></tr>
+        </table>
+        <a class="map" target="_blank" rel="noopener" href="https://www.starlux-airlines.com/zh-TW">✈️ 星宇官網</a>
       </div>
 
       <details>
@@ -264,37 +306,43 @@ const TRIP = [
     html:`
       <ul class="tl">
         <li><div class="time">08:30</div><div class="body">
-          <div class="what">星宇航空 · 桃園 → 東京</div>
-          <div class="note">起飛。<span class="tag check">確認成田 or 羽田</span></div>
+          <div class="what">星宇航空 JX800 · 桃園 TPE → 成田 NRT</div>
+          <div class="note">A350-900。建議 06:00 前到桃園機場（航廈看登機證），帶小孩排隊會慢。</div>
+          <a class="map" target="_blank" rel="noopener" href="https://www.starlux-airlines.com/zh-TW">✈️ 星宇官網</a>
         </div></li>
         <li><div class="time">12:55</div><div class="body">
-          <div class="what">抵達東京</div>
+          <div class="what">抵達成田機場</div>
           <div class="note">入境＋行李＋推車組裝，實際出關大約要 40–60 分鐘。</div>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">計程車 → 飯店</div>
-          <div class="note">帶雙人推車＋行李，計程車最省力。羽田約 30–40 分、成田約 70–90 分鐘。</div>
+          <div class="note">成田到豐洲車程約 70–90 分鐘，帶雙人推車＋行李最省力，但車資不便宜（含高速費大約 ¥25,000–30,000，請現場確認）。<br>
+          想省錢的話：<b>成田特快 N'EX</b> 到東京站（約 55 分鐘，車廂有行李架）再轉計程車到豐洲約 20 分鐘。</div>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">飯店休息一波</div>
-          <div class="note">三井花園飯店 豐洲普米爾。抵達時間大概 14:30–16:00，小孩先睡個午覺再出門。</div>
-          <a class="map" target="_blank" rel="noopener" href="${G('三井ガーデンホテル豊洲プレミア 東京')}">🗺 飯店地圖</a>
+          <div class="note">三井花園飯店 豐洲普米爾（三井ガーデンホテル豊洲プレミア）。抵達時間大概 15:30–17:00，小孩先睡個午覺再出門。</div>
+          <a class="map" target="_blank" rel="noopener" href="${G('三井ガーデンホテル豊洲プレミア 東京')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.gardenhotels.co.jp/toyosu-premier/">🏨 官網</a>
         </div></li>
         <li><div class="time blank">～</div><div class="body">
           <div class="what">LaLaport TOYOSU 血拼</div>
           <div class="note">從飯店走路可到，室內商場，下雨或熱都不怕，推車友善。<span class="tag stroll">推車 OK</span></div>
-          <a class="map" target="_blank" rel="noopener" href="${G('アーバンドック ららぽーと豊洲')}">🗺 LaLaport 豐洲</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('アーバンドック ららぽーと豊洲')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://mitsui-shopping-park.com/lalaport/toyosu/">🛍 官網</a>
+          <a class="map" target="_blank" rel="noopener" href="https://mitsui-shopping-park.com/lalaport/toyosu/floor/">🗂 樓層地圖</a>
         </div></li>
         <li><div class="time">18:00</div><div class="body">
           <div class="what">晚餐 · Bubba Gump Shrimp</div>
           <div class="note">LaLaport 豐洲店。<span class="tag book">已訂位（Wendy）</span>訂位號碼見手機速查。</div>
-          <a class="map" target="_blank" rel="noopener" href="${G('Bubba Gump Shrimp ららぽーと豊洲')}">🗺 餐廳地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('Bubba Gump Shrimp ららぽーと豊洲')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.bubbagump.jp/">🦐 官網</a>
         </div></li>
       </ul>
 
       <div class="note-box">
         <strong>💡 Day 1 就這樣剛好</strong>
-        <p>12:55 落地、出關、進飯店已經耗掉大半天，加上時差跟小孩，第一天只排「飯店 → 走路到商場 → 吃飯」是對的，不要再加行程。</p>
+        <p>12:55 落地、出關、加上成田到豐洲一趟 70–90 分鐘的車程，進飯店大概就下午 4 點了。第一天只排「飯店 → 走路到商場 → 吃飯」是對的，不要再加行程。</p>
         <p>要先買的東西：便利商店的水跟嬰兒用品、飯店附近的藥妝。LaLaport 裡面都有。</p>
       </div>
     `
@@ -320,7 +368,8 @@ const TRIP = [
           <ol>
             <li><b>豐洲 → 池袋</b>　東京 Metro 有樂町線直達，約 28 分鐘，不用轉車。</li>
             <li><b>池袋 → 大宮</b>　JR 湘南新宿線 或 埼京線，約 25–30 分鐘。刷 Suica / PASMO，不用劃位。</li>
-            <li><b>大宮 → 鐵道博物館</b>　轉 New Shuttle（埼玉新都市交通），一站約 3 分鐘，下車走一下就到。</li>
+            <li><b>大宮 → 鐵道博物館</b>　轉 New Shuttle（埼玉新都市交通），一站約 3 分鐘，下車走一下就到。
+              <a class="map" target="_blank" rel="noopener" href="https://www.new-shuttle.jp/">🚝 New Shuttle 官網</a></li>
           </ol>
           <div class="note-box warm" style="margin:12px 0">
             <strong>⚠️ 原本記的路線要修一下</strong>
@@ -390,11 +439,18 @@ const TRIP = [
           <h4>👶 小孩</h4>
           <ul>
             <li><b>清澄庭園</b>就在咖啡廳旁邊，大水池可以看大烏龜和鴨子，3 歲會瘋狂。</li>
-            <li>再往前走一點，<b>木場公園</b>（東京都現代美術館旁）有東京數一數二大的超強戶外兒童遊樂場，有盪鞦韆和溜滑梯。</li>
+            <li>再往前走一點，<b>木場公園</b>（木場公園 / Kiba Park，東京都現代美術館旁）有東京數一數二大的超強戶外兒童遊樂場，有盪鞦韆和溜滑梯。</li>
           </ul>
-          <a class="map" target="_blank" rel="noopener" href="${G('Blue Bottle Coffee 清澄白河 ロースタリー')}">🗺 藍瓶咖啡</a>
-          <a class="map" target="_blank" rel="noopener" href="${G('清澄庭園 東京')}">🗺 清澄庭園</a>
-          <a class="map" target="_blank" rel="noopener" href="${G('木場公園 冒険広場 東京')}">🗺 木場公園</a>
+          <h4>🔗 連結</h4>
+          <p style="margin:0">
+            <a class="map" target="_blank" rel="noopener" href="${G('Blue Bottle Coffee 清澄白河 ロースタリー')}">🗺 藍瓶咖啡</a>
+            <a class="map" target="_blank" rel="noopener" href="https://bluebottlecoffee.jp/cafes/kiyosumi">☕ 藍瓶官網</a>
+            <a class="map" target="_blank" rel="noopener" href="${G('清澄庭園 東京')}">🗺 清澄庭園</a>
+            <a class="map" target="_blank" rel="noopener" href="https://www.tokyo-park.or.jp/teien/en/kiyosumi/">🌳 庭園官網</a>
+            <a class="map" target="_blank" rel="noopener" href="${G('木場公園 冒険広場 東京')}">🗺 木場公園</a>
+            <a class="map" target="_blank" rel="noopener" href="https://www.tokyo-park.or.jp/park/kiba/">🛝 公園官網</a>
+            <a class="map" target="_blank" rel="noopener" href="https://www.mot-art-museum.jp/">🎨 現代美術館</a>
+          </p>
         </div>
       </details>
 
@@ -413,11 +469,15 @@ const TRIP = [
           </ul>
           <h4>👶 小孩</h4>
           <ul>
-            <li><b>隅田川露台步道</b>規劃了完美的無障礙坡道，可以推著雙人推車沿著河岸散步，迎面就是巨大的晴空塔，拍照超漂亮。</li>
+            <li><b>隅田川露台步道</b>（隅田川テラス / Sumida River Terrace）規劃了完美的無障礙坡道，可以推著雙人推車沿著河岸散步，迎面就是巨大的晴空塔（東京スカイツリー / Tokyo Skytree），拍照超漂亮。</li>
             <li>鄰近淺草，新大樓和咖啡廳對嬰兒車都很習慣，沿途也有不少社區小公園有溜滑梯。</li>
           </ul>
-          <a class="map" target="_blank" rel="noopener" href="${G('Dandelion Chocolate 蔵前 東京')}">🗺 Dandelion</a>
-          <a class="map" target="_blank" rel="noopener" href="${G('隅田川テラス 蔵前')}">🗺 隅田川露台</a>
+          <h4>🔗 連結</h4>
+          <p style="margin:0">
+            <a class="map" target="_blank" rel="noopener" href="${G('Dandelion Chocolate 蔵前 東京')}">🗺 Dandelion</a>
+            <a class="map" target="_blank" rel="noopener" href="https://dandelionchocolate.jp/">🍫 官網</a>
+            <a class="map" target="_blank" rel="noopener" href="${G('隅田川テラス 蔵前')}">🗺 隅田川露台</a>
+          </p>
         </div>
       </details>
 
@@ -431,7 +491,7 @@ const TRIP = [
           <h4>☕ 大人</h4>
           <ul>
             <li>車站出來就是<b>二子玉川 Rise</b> 商場。</li>
-            <li>最厲害的是<b>蔦屋家電</b>，把書店、高檔設計家電、植物店和咖啡廳結合在一起，空間極大、美得像藝術館，可以推著車在裡面一邊喝咖啡一邊逛。</li>
+            <li>最厲害的是<b>蔦屋家電</b>（蔦屋家電 / Tsutaya Electrics），把書店、高檔設計家電、植物店和咖啡廳結合在一起，空間極大、美得像藝術館，可以推著車在裡面一邊喝咖啡一邊逛。</li>
           </ul>
           <h4>👶 小孩</h4>
           <ul>
@@ -439,8 +499,13 @@ const TRIP = [
             <li>公園內有大片面向多摩川的草皮，<b>可以看到電車過鐵橋</b>，3 歲鐵道迷會瘋狂。</li>
             <li>還有幼兒專屬的遊樂場，不到 1 歲的寶寶也可以坐在野餐墊上吹風。</li>
           </ul>
-          <a class="map" target="_blank" rel="noopener" href="${G('二子玉川ライズ 蔦屋家電')}">🗺 蔦屋家電</a>
-          <a class="map" target="_blank" rel="noopener" href="${G('二子玉川公園 東京')}">🗺 二子玉川公園</a>
+          <h4>🔗 連結</h4>
+          <p style="margin:0">
+            <a class="map" target="_blank" rel="noopener" href="${G('二子玉川ライズ 蔦屋家電')}">🗺 蔦屋家電</a>
+            <a class="map" target="_blank" rel="noopener" href="https://store.tsite.jp/futakotamagawa/">📚 蔦屋官網</a>
+            <a class="map" target="_blank" rel="noopener" href="https://www.rise.sc/">🏬 二子玉川 Rise</a>
+            <a class="map" target="_blank" rel="noopener" href="${G('二子玉川公園 東京')}">🗺 二子玉川公園</a>
+          </p>
         </div>
       </details>
 
@@ -471,7 +536,9 @@ const TRIP = [
         <li><div class="time blank">中午</div><div class="body">
           <div class="what">東京迪士尼海洋 · 半日遊</div>
           <div class="note">進閘門後<b>立刻</b>開 App 搶票，順序見下方。</div>
-          <a class="map" target="_blank" rel="noopener" href="${G('東京ディズニーシー')}">🗺 迪士尼海洋</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('東京ディズニーシー')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.tokyodisneyresort.jp/tds/">🌊 海洋官網</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.tokyodisneyresort.jp/">🏰 度假區官網</a>
         </div></li>
         <li><div class="time">19:15</div><div class="body">
           <div class="what">晚餐 · 達菲秀餐廳</div>
@@ -510,7 +577,8 @@ const TRIP = [
         <li><div class="time blank">提早</div><div class="body">
           <div class="what">提早入園！</div>
           <div class="note">住園區飯店有提早入園的資格，這是今天最大的優勢，一定要用到。前一晚先確認集合時間跟入口。</div>
-          <a class="map" target="_blank" rel="noopener" href="${G('東京ディズニーランド')}">🗺 迪士尼樂園</a>
+          <a class="map" target="_blank" rel="noopener" href="${G('東京ディズニーランド')}">🗺 地圖</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.tokyodisneyresort.jp/tdl/">🏰 樂園官網</a>
         </div></li>
         <li><div class="time blank">入園</div><div class="body">
           <div class="what">開搶</div>
@@ -520,6 +588,7 @@ const TRIP = [
           <div class="what">午餐 · 北齋</div>
           <div class="note">日式定食，小孩比較好接受。<span class="tag book">與下面二選一</span></div>
           <a class="map" target="_blank" rel="noopener" href="${G('レストラン北齋 東京ディズニーランド')}">🗺 北齋</a>
+          <a class="map" target="_blank" rel="noopener" href="https://www.tokyodisneyresort.jp/tdl/restaurant/">🍱 餐廳一覽</a>
         </div></li>
         <li><div class="time">11:50</div><div class="body">
           <div class="what">午餐 · Easter cafe</div>
@@ -571,12 +640,13 @@ const TRIP = [
           <div class="note">退房後行李可以先寄櫃檯，最後在園區或飯店逛一下買伴手禮。</div>
         </div></li>
         <li><div class="time">12:30</div><div class="body">
-          <div class="what">預定租車 前往機場</div>
-          <div class="note"><span class="tag book">已預約</span>先確認上車地點是飯店大廳哪一側，並跟司機確認航廈。</div>
+          <div class="what">預定租車 前往成田機場</div>
+          <div class="note"><span class="tag book">已預約</span>先確認上車地點是飯店大廳哪一側，並跟司機講清楚是<b>成田機場</b>、哪一個航廈（航廈看登機證或訂位確認信）。</div>
         </div></li>
         <li><div class="time">16:20</div><div class="body">
-          <div class="what">星宇航空 · 東京 → 台北</div>
-          <div class="note"><span class="tag check">確認成田 or 羽田</span>國際線建議起飛前 2.5 小時到，也就是 13:50 前進航廈。</div>
+          <div class="what">星宇航空 JX803 · 成田 NRT → 桃園 TPE</div>
+          <div class="note">國際線建議起飛前 2.5 小時到，也就是 13:50 前進航廈。飛行時間約 3 小時 40 分。</div>
+          <a class="map" target="_blank" rel="noopener" href="https://www.starlux-airlines.com/zh-TW">✈️ 星宇官網</a>
         </div></li>
         <li><div class="time blank">晚間</div><div class="body">
           <div class="what">抵達台灣 · 回家休息嚕～</div>
@@ -584,9 +654,9 @@ const TRIP = [
       </ul>
 
       <div class="note-box warm">
-        <strong>⏱ 時間夠不夠？</strong>
-        <p>12:30 從舞濱出發：<b>羽田</b>約 40 分鐘，13:10 到，非常寬鬆。<b>成田</b>約 70–90 分鐘，14:00 左右到，離 16:20 起飛還有 2 小時 20 分，帶小孩排隊會有點趕。</p>
-        <p>如果是成田，考慮把租車提早到 11:30–12:00。</p>
+        <strong>⏱ 時間有點緊，建議提早</strong>
+        <p>舞濱到<b>成田</b>約 70–90 分鐘。12:30 出發 → 14:00 左右到，離 16:20 起飛只剩 2 小時 20 分。扣掉退稅、託運推車、帶兩個小孩過安檢，會有點趕。</p>
+        <p><b>建議把租車提早到 11:30–12:00</b>，13:00 前到機場最安心。早到了在航廈裡吃東西、逛免稅店都比在機場外面趕好。</p>
       </div>
 
       <div class="note-box">
@@ -665,6 +735,40 @@ panels.addEventListener('click', e => {
   if (inTrip) el.innerHTML = `<span class="countdown">今天是 ${inTrip.tabSub} · ${inTrip.title}</span>`;
   else if (days > 0) el.innerHTML = `<span class="countdown">還有 ${days} 天出發</span>`;
   else el.innerHTML = `<span class="countdown">旅程已結束 · 回顧</span>`;
+})();
+
+/* 深淺色切換：淺色 → 深色 → 跟隨系統，記在 localStorage，預設淺色 */
+(function () {
+  const btn = document.getElementById('theme');
+  const order = ['light', 'dark', 'system'];
+  const label = { light: '☀️ 淺色', dark: '🌙 深色', system: '⚙️ 系統' };
+  const bar = { light: '#f7f4ee', dark: '#16151a' };
+
+  function apply(t) {
+    document.documentElement.dataset.theme = t;
+    btn.textContent = label[t];
+    btn.title = `目前：${label[t].slice(2)}（點一下換下一個）`;
+    const dark = t === 'dark' ||
+      (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = dark ? bar.dark : bar.light;
+    try { localStorage.setItem('theme', t); } catch (e) {}
+  }
+
+  let cur = 'light';
+  try { cur = localStorage.getItem('theme') || 'light'; } catch (e) {}
+  if (!order.includes(cur)) cur = 'light';
+  apply(cur);
+
+  btn.onclick = () => {
+    cur = order[(order.indexOf(cur) + 1) % order.length];
+    apply(cur);
+  };
+
+  /* 選「系統」時，系統換色也要跟著換狀態列顏色 */
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (document.documentElement.dataset.theme === 'system') apply('system');
+  });
 })();
 
 /* 回到頂端 */

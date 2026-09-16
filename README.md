@@ -48,7 +48,13 @@
 - `<details><summary><span class="n">1</span>標題</summary><div class="dbody">…</div></details>` 可收合區塊。
 - `<div class="note-box">` 藍色提醒、`<div class="note-box warm">` 橘色警告。
 - `<span class="tag book">已訂位</span>`、`tag stroll` 推車、`tag check` 待確認。
-- 地圖按鈕：`<a class="map" target="_blank" rel="noopener" href="${G('店名 地址')}">🗺 …</a>`，`G()` 會產 Google Maps 搜尋連結。
+- 地圖按鈕：`<a class="map" target="_blank" rel="noopener" href="${G('店名 地址')}">🗺 …</a>`，`G()` 會產 Google Maps 搜尋連結。官網連結用同一個 class，直接寫 `href`。
+
+## 深淺色
+
+右上角的按鈕循環切換 **淺色 → 深色 → 跟隨系統**，選擇記在 `localStorage` 的 `theme`。
+
+預設是**淺色**（不跟隨系統），只有使用者主動選「系統」才會看 `prefers-color-scheme`。顏色都定義在 CSS 變數：`:root` 淺色、`:root[data-theme="dark"]` 深色、`@media (prefers-color-scheme:dark) :root[data-theme="system"]` 系統深色。三處都要一起改，不要只改一個。
 
 ## 換 icon
 
