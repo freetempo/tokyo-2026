@@ -152,6 +152,114 @@ ALIASES = {
     "イング": "ing",
 }
 
+# 官方的英文／羅馬字寫法。只列能確定的 —— 官網英文版是圖片店名、涵蓋不全，
+# 無法自動對接，所以這份是手工整理。診所、保險店、小餐館等官方沒有英文名的
+# 就留空，不要自己翻（翻了就是編造）。店名已是拉丁字母的不用列。
+EN = {
+    "アーバンドック ららぽーと豊洲": "Urban Dock LaLaport TOYOSU",
+    "アカチャンホンポ": "Akachan Honpo",
+    "アフタヌーンティー・リビング": "Afternoon Tea LIVING",
+    "アプレ レ クール": "apres les cours",
+    "アミュージアム": "AMUSIUM",
+    "アローズラボ＆アローズジム ららぽーと豊洲": "Arrows Lab & Arrows Gym",
+    "イング": "ing",
+    "いしがまやハンバーグ": "Ishigamaya Hamburg",
+    "ウエルシア": "WELCIA",
+    "ウエルシア薬局": "WELCIA Pharmacy",
+    "オークリーストア": "OAKLEY",
+    "カシヤマ": "KASHIYAMA",
+    "カリモク60": "Karimoku60",
+    "カルディコーヒーファーム": "KALDI COFFEE FARM",
+    "キッザニア東京": "KidZania Tokyo",
+    "キッズスクウェア豊洲ベイサイドクロス": "Kids Square",
+    "クリスピー・クリーム・ドーナツ": "Krispy Kreme Doughnuts",
+    "グローバルワーク": "GLOBAL WORK",
+    "グランブッフェ": "GRAND BUFFET",
+    "ケンタッキーフライドチキン": "Kentucky Fried Chicken / KFC",
+    "ゲンキ・キッズ": "GENKI KIDS",
+    "コラージュ ガリャルダガランテ": "COLLAGE GALLARDAGALANTE",
+    "コロンビア スポーツウェア": "Columbia Sportswear",
+    "ゴディバ": "GODIVA",
+    "ゴディパン": "GODIVA bakery GODIPAN",
+    "ゴンチャ": "Gong cha",
+    "こめらく みんなで、お茶漬け日和。": "Komeraku",
+    "サーティワンアイスクリーム": "Baskin-Robbins / 31 Ice Cream",
+    "サックスバー": "SAC'S BAR",
+    "サムソナイト": "Samsonite",
+    "サンマルクカフェ": "ST. MARC CAFE",
+    "ザ・ダイソー": "THE DAISO",
+    "ジャーナル スタンダード レリューム": "JOURNAL STANDARD relume",
+    "ジンズ": "JINS",
+    "スーパースポーツゼビオ": "SUPER SPORTS XEBIO",
+    "スーモカウンター": "SUUMO Counter",
+    "スターバックスコーヒー　シーサイドデッキ店": "Starbucks Coffee",
+    "スターバックスコーヒー サウスポート2階店": "Starbucks Coffee",
+    "スターバックスコーヒー 地下１階店": "Starbucks Coffee",
+    "スパゲティ そら": "Spaghetti Sora",
+    "だし茶漬け えん": "Dashi Chazuke EN",
+    "ドゥ・スポーツプラザ": "DO SPORTS PLAZA",
+    "ドコモショップ": "docomo Shop",
+    "ドンク": "DONQ",
+    "トイザらス": "Toys\"R\"Us",
+    "トミー ヒルフィガー": "TOMMY HILFIGER",
+    "ナチュラルビューティーベーシック": "NATURAL BEAUTY BASIC",
+    "ノジマ": "Nojima",
+    "ハンズ": "Hands",
+    "パンダ薬局 豊洲店": "Panda Pharmacy",
+    "ババ・ガンプ・シュリンプ": "Bubba Gump Shrimp",
+    "ビューティー＆ユース ユナイテッドアローズ": "BEAUTY&YOUTH UNITED ARROWS",
+    "ファミマ！!": "FamilyMart",
+    "フタバフルーツパーラー": "Futaba Fruits Parlor",
+    "フランフラン": "Francfranc",
+    "フルーツギャザリング": "FRUITS GATHERING",
+    "フレッシュネスバーガー": "FRESHNESS BURGER",
+    "プティマイン": "petit main",
+    "ブッチャー・リパブリック/ベル・オーブ": "BUTCHER REPUBLIC",
+    "ポニークリーニング": "Pony Cleaning",
+    "ポロラルフローレン": "POLO RALPH LAUREN",
+    "マジックミシン": "Magic Mishin",
+    "メガネスーパー": "Megane Super",
+    "ユニクロ": "UNIQLO",
+    "ユニックス サロン＆スパ": "UNIX SALON & SPA",
+    "ユナイテッド・シネマ豊洲": "United Cinemas Toyosu",
+    "ユナイテッドアローズ グリーンレーベル リラクシング": "UNITED ARROWS green label relaxing",
+    "ラフィネ": "Raffine",
+    "ルピシア": "LUPICIA",
+    "レスポートサック": "LeSportsac",
+    "ローリーズファーム": "LOWRYS FARM",
+    "ヴィクトリアゴルフ": "Victoria Golf",
+    "京鼎樓": "Jin Din Rou",
+    "中国火鍋専門店 小肥羊": "Little Sheep",
+    "吉祥庵": "Kisshoan",
+    "四谷大塚": "Yotsuya Otsuka",
+    "大かまど飯 寅福": "Torafuku",
+    "宮武讃岐うどん": "Miyatake Sanuki Udon",
+    "富澤商店": "TOMIZ",
+    "島村楽器": "Shimamura Music",
+    "成城石井": "SEIJO ISHII",
+    "整体×骨盤 カラダファクトリー": "Karada Factory",
+    "日本橋 天丼 金子半之助": "Kaneko Hannosuke",
+    "有隣堂": "Yurindo",
+    "東京スタイルみそラーメン ど・みそ": "Do-Miso",
+    "東京小町": "Tokyo Komachi",
+    "正泰苑": "Seitaien",
+    "無印良品": "MUJI",
+    "珈琲所 コメダ珈琲店": "Komeda's Coffee",
+    "築地銀だこ": "Tsukiji Gindako",
+    "豊洲場外食堂魚金": "Uokin",
+    "酒場シナトラ": "Sakaba Sinatra",
+    "鳥開総本家": "Torikai Sohonke",
+    "韓美膳（ハンビジェ）": "HANBIJAE",
+    "靴下屋": "Kutsushitaya / Tabio",
+    "靴専科": "Kutsu Senka",
+    "三井のリハウス": "Mitsui no Rehouse",
+    "千葉銀行": "Chiba Bank",
+    "水上バス": "Water Bus",
+    "100本のスプーン": "100 SPOONS",
+    "ＲＩＮＧＯ": "RINGO",
+    "とんかつ新宿さぼてん": "Tonkatsu Shinjuku Saboten",
+}
+
 # 行程上會用到的店，在頁面上標星號
 STARRED = {
     "アカチャンホンポ": "Day 1 買 Cybex Melio 推車",
@@ -219,7 +327,8 @@ def main() -> int:
 
         # 搜尋用字串：店名 + 羅馬字 + 手動別名 + 類別，前端只比對這一欄
         alias = ALIASES.get(name, "")
-        search = " ".join(filter(None, [name, to_romaji(name), alias, cat_raw]))
+        en = EN.get(name, "")
+        search = " ".join(filter(None, [name, en, to_romaji(name), alias, cat_raw]))
 
         shops.append({
             "name": name,
@@ -230,6 +339,7 @@ def main() -> int:
             "floor": floor,
             "url": SITE + href.group(1) if href else "",
             "star": STARRED.get(name, ""),
+            "en": en,
             "s": search,
         })
 
@@ -265,7 +375,7 @@ def main() -> int:
     for k, v in Counter(f'{s["bld"]} {s["zone"]} {s["floor"]}'.strip() for s in shops).most_common():
         print(f"  {v:>3}  {k}")
     names = {s["name"] for s in shops}
-    for label, keys in (("標星", STARRED), ("別名", ALIASES)):
+    for label, keys in (("標星", STARRED), ("別名", ALIASES), ("英文名", EN)):
         bad = [n for n in keys if n not in names]
         if bad:
             print(f"⚠️ {label}對不到店名：" + "、".join(bad), file=sys.stderr)

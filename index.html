@@ -223,6 +223,7 @@ details>summary .n{
 .shop .nm{flex:1 1 auto;min-width:0;font-weight:700;font-size:15px;word-break:break-word}
 .shop .ct{flex:0 0 auto;font-size:11.5px;color:var(--ink-soft);text-align:right;max-width:38%}
 .shop .fl{display:block;font-size:11.5px;color:var(--ink-soft);font-weight:400;margin-top:2px}
+.shop .en{font-weight:400;font-size:13px;color:var(--ink-soft)}
 .shop.star{background:var(--warm-soft)}
 .shop.star .nm::before{content:"⭐ "}
 .shop .why{display:block;font-size:12px;color:var(--warm);font-weight:700;margin-top:3px}
@@ -1234,6 +1235,13 @@ const TRIP = [
         <b>ZARA</b> 跨 1F 與 2F、<b>フレッシュネスバーガー</b> 有獨立店與美食廣場店。</p>
       </div>
 
+      <div class="note-box">
+        <strong>🔤 英文名稱</strong>
+        <p><b>192 / 214 家可以用英文搜到</b>（89 家店名本身就是拉丁字母，另外 103 家補了官方英文寫法，顯示在日文名後面的括號裡）。</p>
+        <p>剩下 <b>22 家只有日文</b> —— 都是診所、保險店、彩券行和小餐館，官方本來就沒有英文名，我沒有自己翻（翻了就變成查不到的假名稱）。那些可以打羅馬字找，例如 <code>sawada</code>、<code>yazawa</code>。</p>
+        <p style="font-size:13px">官網雖然有英文版，但店名是<b>圖片</b>、而且只涵蓋約 60 家，沒辦法自動對接，所以這份是手工整理的。</p>
+      </div>
+
       <p style="font-size:13px;color:var(--ink-soft);margin:14px 0 0">
         點店名可開官方頁看營業時間。店家會變動，以現場與官網為準。<br>
         要更新清單：repo 裡跑 <code>python3 tools/fetch-shops.py</code> 再跑 <code>python3 tools/build-sw.py</code>。
@@ -1280,6 +1288,7 @@ const Shops = (function () {
   let started = false;
   let cat = '';
   let loc = '';
+  let onlyStar = false;
   let els = null;
 
   /* 搜尋用的正規化：全形英數→半形、片假名→平假名、去掉中黑點與空白 */
@@ -1315,7 +1324,11 @@ const Shops = (function () {
 
   function renderChips() {
     els.cats.textContent = '';
-    els.cats.appendChild(chip('全部類別', cat === '', () => { cat = ''; render(); }));
+    const nStar = SHOPS.filter(s => s.star).length;
+    els.cats.appendChild(chip(`⭐ 行程相關 ${nStar}`, onlyStar,
+      () => { onlyStar = !onlyStar; render(); }));
+    els.cats.appendChild(chip('全部類別', cat === '' && !onlyStar,
+      () => { cat = ''; onlyStar = false; render(); }));
     CATS.forEach(c => {
       const n = SHOPS.filter(s => s.cat === c).length;
       if (!n) return;
@@ -1343,6 +1356,12 @@ const Shops = (function () {
       const nm = document.createElement('div');
       nm.className = 'nm';
       nm.textContent = s.name;
+      if (s.en) {
+        const en = document.createElement('span');
+        en.className = 'en';
+        en.textContent = ' (' + s.en + ')';
+        nm.appendChild(en);
+      }
       if (showLoc) {
         const fl = document.createElement('span');
         fl.className = 'fl';
@@ -1370,6 +1389,7 @@ const Shops = (function () {
     const raw = els.q.value;
     const q = norm(raw);
     let rows = SHOPS.filter(s =>
+      (!onlyStar || s.star) &&
       (!cat || s.cat === cat) &&
       (!loc || locKey(s) === loc) &&
       (!q || norm(s.s || s.name).includes(q) || norm(s.cat).includes(q))
@@ -1462,7 +1482,7 @@ const Shops = (function () {
     if (!els.q) { started = false; return; }
 
     els.q.addEventListener('input', render);
-    els.clear.onclick = () => { els.q.value = ''; cat = ''; loc = ''; render(); els.q.focus(); };
+    els.clear.onclick = () => { els.q.value = ''; cat = ''; loc = ''; onlyStar = false; render(); els.q.focus(); };
 
     /* 資料由 shops.js 用 <script> 載入（window.SHOPS_DATA），
        不走 fetch —— 離線時最可靠。 */
