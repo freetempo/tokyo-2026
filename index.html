@@ -212,6 +212,8 @@ details>summary .n{
 .tytbl tr:last-child td{border-bottom:0}
 .tytbl .t{white-space:nowrap;font-weight:700;width:1%;padding-right:8px}
 .tytbl tr.near td{color:var(--warm);font-weight:700}
+.tytbl td.hd{font-size:11px;opacity:.65;font-weight:700;padding-bottom:3px}
+.tytbl tr.near{background:rgba(193,80,46,.09)}
 .ty .asof{font-size:12px;opacity:.75}
 
 /* ---- 店家清單（LaLaport 頁籤） ---- */
@@ -1889,12 +1891,24 @@ panels.addEventListener('click', e => {
       + links);
   }
 
-  /* 東京大致在 35.7N 139.7E。粗略判斷預報點離關東多近，只用來標色提醒，
-     不做任何預測 —— 真正的判斷看官方進路圖。 */
-  function nearKanto(pos) {
-    if (!pos || pos.length < 2) return false;
-    const dLat = Math.abs(pos[0] - 35.7), dLon = Math.abs(pos[1] - 139.7);
-    return dLat < 6 && dLon < 6;
+  /* 東京車站一帶，用來算每個預報點的距離 */
+  const TOKYO = [35.681, 139.767];
+
+  /* 大圓距離（km）。只是把官方座標換算成好懂的數字，不做任何自己的預測。 */
+  function distKm(pos) {
+    if (!pos || pos.length < 2) return null;
+    const R = 6371, rad = d => d * Math.PI / 180;
+    const p1 = rad(TOKYO[0]), p2 = rad(pos[0]);
+    const dp = p2 - p1, dl = rad(pos[1] - TOKYO[1]);
+    const x = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+
+  const WD = ['日', '一', '二', '三', '四', '五', '六'];
+  function whenLabel(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${iso.slice(11, 16)}`;
   }
 
   fetch(JMA + 'data/targetTc.json?_t=' + Date.now(), { cache: 'no-store' })
@@ -1916,28 +1930,38 @@ panels.addEventListener('click', e => {
 
           const rows = spec.slice(1).map(part => {
             const when = (part.validtime || {}).JST || '';
-            const label = (part.part && part.part.jp) || '';
             const pos = (part.position || {}).deg;
-            const wind = ((part.maximumWind || {}).sustained || {})['m/s'];
-            const gust = ((part.maximumWind || {}).gust || {})['m/s'];
             return {
-              when: when ? `${+when.slice(5, 7)}/${+when.slice(8, 10)} ${when.slice(11, 16)}` : label,
+              iso: when,
+              when: whenLabel(when) || ((part.part && part.part.jp) || ''),
               loc: part.location || '',
               pres: part.pressure || '',
-              wind, gust,
-              near: nearKanto(pos),
+              wind: ((part.maximumWind || {}).sustained || {})['m/s'],
+              gust: ((part.maximumWind || {}).gust || {})['m/s'],
+              km: distKm(pos),
+              circle: (part.probabilityCircleRadius || {}).km,
               scale: part.scale || '',
             };
           }).filter(r => r.loc || r.pres);
 
-          const table = rows.length ? '<table class="tytbl">' + rows.map(r =>
-            `<tr class="${r.near ? 'near' : ''}"><td class="t">${r.when}</td>`
-            + `<td>${r.loc}${r.scale ? '（' + r.scale + '）' : ''}</td>`
-            + `<td style="white-space:nowrap">${r.pres ? r.pres + ' hPa' : ''}</td>`
-            + `<td style="white-space:nowrap">${r.wind ? '風 ' + r.wind : ''}${r.gust ? '／陣 ' + r.gust : ''}</td></tr>`
-          ).join('') + '</table>' : '';
+          /* 最接近東京的那一個預報點 */
+          const withKm = rows.filter(r => r.km != null);
+          const closest = withKm.length
+            ? withKm.reduce((a, b) => (b.km < a.km ? b : a))
+            : null;
 
-          const anyNear = rows.some(r => r.near);
+          const table = rows.length
+            ? '<table class="tytbl"><tr><td class="hd">時間</td><td class="hd">位置</td>'
+              + '<td class="hd" style="text-align:right">距東京</td><td class="hd">氣壓・風</td></tr>'
+              + rows.map(r =>
+                `<tr class="${closest && r === closest ? 'near' : ''}"><td class="t">${r.when}</td>`
+                + `<td>${r.loc}${r.scale ? '（' + r.scale + '）' : ''}</td>`
+                + `<td style="white-space:nowrap;text-align:right">`
+                + (r.km == null ? '' : `${Math.round(r.km)} km`) + '</td>'
+                + `<td style="white-space:nowrap">${r.pres ? r.pres + ' hPa' : ''}`
+                + `${r.wind ? ' 風' + r.wind : ''}${r.gust ? '／' + r.gust : ''}</td></tr>`
+              ).join('') + '</table>'
+            : '';
 
           /* 颱風資訊過期就是危險，所以一定要看得出資料多舊 */
           const ageH = issue ? (Date.now() - new Date(issue).getTime()) / 3600000 : null;
@@ -1948,13 +1972,20 @@ panels.addEventListener('click', e => {
               ? `<p><b>⚠️ 這是 ${Math.round(ageH)} 小時前的資料</b>，可能已經過期`
                 + '（沒網路時會看到舊的）。請點下面的官方連結確認最新狀況。</p>'
               : '')
-            + (anyNear
-              ? '<p><b>官方預報路徑會接近關東。</b>行程可能受影響，尤其班機與戶外安排。</p>'
-              : '<p>目前官方預報路徑沒有特別接近關東，但颱風路徑常變，每天看一次。</p>')
+            + (closest
+              ? '<p><b>★ 最接近東京：' + closest.when + '　約 '
+                + Math.round(closest.km) + ' km</b>（' + closest.loc + '）'
+                + (closest.km < 500
+                    ? '<br>這個距離下行程可能受影響，尤其班機與戶外安排。' : '')
+                + (closest.circle
+                    ? `<br><span class="asof">該時間點的預報圓半徑 ${closest.circle} km`
+                      + '，實際位置可能更近或更遠。</span>' : '')
+                + '</p>'
+              : '<p>目前的資料算不出距離，請直接看官方進路圖。</p>')
             + table
             + `<p class="asof">氣象廳發布 ${issue.slice(0, 16).replace('T', ' ')}`
             + (ageH != null ? `（${ageH < 1 ? '不到 1' : Math.round(ageH)} 小時前）` : '')
-            + '　橘色列＝預報位置接近關東</p>'
+            + '　橘色列＝最接近東京的時間點</p>'
             + links);
         });
     })
