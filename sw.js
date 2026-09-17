@@ -1,5 +1,5 @@
 // 由 tools/build-sw.py 產生，請不要手改。
-const CACHE = "tokyo2026-bbc8a02020";
+const CACHE = "tokyo2026-ff8645f25f";
 const ASSETS = [
   "./",
   "index.html",
