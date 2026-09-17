@@ -56,8 +56,10 @@ body{
 
 /* ---- header ---- */
 header{padding:28px 0 4px}
-.hrow{display:flex;align-items:flex-start;gap:12px}
-.hrow>div{flex:1 1 auto;min-width:0}
+/* 會換行：窄螢幕放不下時，兩顆按鈕整組掉到下一行右對齊，
+   不會把深淺色按鈕擠出畫面 */
+.hrow{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.hrow>div:first-child{flex:1 1 200px;min-width:0}
 h1{font-size:26px;line-height:1.3;margin:0 0 4px;letter-spacing:-.01em}
 .sub{color:var(--ink-soft);font-size:14px;margin:0}
 .themebtn{
@@ -66,7 +68,12 @@ h1{font-size:26px;line-height:1.3;margin:0 0 4px;letter-spacing:-.01em}
   font-weight:700;cursor:pointer;line-height:1.3;white-space:nowrap;box-shadow:var(--shadow);
 }
 .themebtn:active{transform:scale(.96)}
-.hbtns{flex:0 0 auto;display:flex;gap:6px;margin-top:2px}
+.hbtns{flex:0 0 auto;display:flex;gap:6px;margin-top:2px;margin-left:auto}
+/* 手機上把按鈕縮小一點，多半就塞得進同一列 */
+@media (max-width:430px){
+  .themebtn{font-size:12px;padding:6px 9px}
+  .hbtns{gap:5px}
+}
 #refresh-hint{margin:8px 0 0;font-size:13px;color:var(--warm)}
 #refresh-hint:empty{display:none}
 .countdown{
@@ -207,7 +214,9 @@ details>summary .n{
 .ty strong{display:block;margin-bottom:4px}
 .ty p{margin:0 0 6px}
 .ty p:last-child{margin:0}
-.tytbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0 6px}
+.tyscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0 6px}
+.tyscroll::-webkit-scrollbar{height:0}
+.tytbl{width:100%;min-width:330px;border-collapse:collapse;font-size:12.5px}
 .tytbl td{padding:5px 3px;border-bottom:1px solid rgba(128,128,128,.22);vertical-align:top}
 .tytbl tr:last-child td{border-bottom:0}
 .tytbl .t{white-space:nowrap;font-weight:700;width:1%;padding-right:8px}
@@ -1951,7 +1960,7 @@ panels.addEventListener('click', e => {
             : null;
 
           const table = rows.length
-            ? '<table class="tytbl"><tr><td class="hd">時間</td><td class="hd">位置</td>'
+            ? '<div class="tyscroll"><table class="tytbl"><tr><td class="hd">時間</td><td class="hd">位置</td>'
               + '<td class="hd" style="text-align:right">距東京</td><td class="hd">氣壓・風</td></tr>'
               + rows.map(r =>
                 `<tr class="${closest && r === closest ? 'near' : ''}"><td class="t">${r.when}</td>`
@@ -1960,7 +1969,7 @@ panels.addEventListener('click', e => {
                 + (r.km == null ? '' : `${Math.round(r.km)} km`) + '</td>'
                 + `<td style="white-space:nowrap">${r.pres ? r.pres + ' hPa' : ''}`
                 + `${r.wind ? ' 風' + r.wind : ''}${r.gust ? '／' + r.gust : ''}</td></tr>`
-              ).join('') + '</table>'
+              ).join('') + '</table></div>'
             : '';
 
           /* 颱風資訊過期就是危險，所以一定要看得出資料多舊 */
