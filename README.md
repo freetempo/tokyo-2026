@@ -230,7 +230,13 @@ innerHTML 裡，字串字面會被一起數到。要看 `.wx` 元素本身的文
 | 玉山國外消費加碼 | `event.esunbank.com.tw/credit/travel/index.html`（全玉山卡適用，**含熊本熊卡**） |
 | 玉山世界卡 | `esunbank.com/zh-tw/personal/credit-card/intro/world-card/world` |
 | 匯豐 Live+ | `hsbc.com.tw/credit-cards/products/liveplus/` |
-| 國外交易服務費 | 兩家都是 1.5% |
+| 台新 Richart（玩旅刷） | `taishinbank.com.tw/TSB/personal/credit/intro/overview/future/ab46dfa7-5d88-11f1-b50f-0050568c09e3` |
+| 國外交易服務費 | 三家都是 1.5% |
+
+決策表是**按加碼上限用完的先後**排的，不是按單筆回饋率排：熊本熊 +6% 每期上限 500
+（約刷 8,300 封頂）、Live+ +3% 每期上限 888（約 29,600 封頂），這趟一定刷破；
+Richart 玩旅刷 3.3% 的上限是信用額度＋30 萬，實務上無上限。所以封頂之後全部給 Richart。
+只比單筆回饋率會誤導大額消費，這點曾被使用者指出過。
 
 匯豐的「精選餐飲通路」是 **MCC Code 判定，沒有具名商家清單**，所以頁面上寫的是
 「櫃台無法確認」而不是給清單 —— 這點不要自作聰明補名單。
