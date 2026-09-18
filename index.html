@@ -1898,29 +1898,33 @@ safe('重新整理', function () {
 
 
 /* ---------- 天氣預報 ----------
-   開頁面時向 Open-Meteo 抓一次（免 API key、CORS 開放），把每一天的
-   氣溫與降雨機率填進該日頁籤與頁內標題下面。
+   兩個來源，依序嘗試：
 
-   每一天用它自己的地點座標（實測 9/25 舞濱 37% vs 豐洲 29%，會差），
-   一次請求就能拿多個地點。
+   1. Open-Meteo  免 key、座標級、16 天。細但有被封鎖的風險
+      （回報過 iOS 上 api.open-meteo.com 不通而 jma.go.jp 通，
+      推測是內容封鎖器或 DNS 過濾）
+   2. 氣象廳 bosai 週間預報  區域級、7 天。粗一點但同一個網域
+      已證明在使用者手機上可用，而且是日本官方
 
-   刻意不進 service worker 快取 —— 預報會變，快取就是放過期資訊。
-   沒網路或抓失敗時只有這一行降級，不影響頁面其他部分。 */
+   兩個都失敗才降級成 tenki.jp 連結，並把錯誤原因寫在畫面上方便回報。
+   刻意不進 service worker 快取 —— 預報會變，快取就是放過期資訊。 */
 safe('天氣', function () {
   const slots = [...document.querySelectorAll('.wx')];
   if (!slots.length) return;
 
-  /* 每個地點：座標 + 顯示名稱 + 該地的 tenki.jp 十日預報 */
+  /* 每個地點：Open-Meteo 座標、tenki.jp 連結、氣象廳的對應區域 */
   const PLACES = {
     toyosu:  { lat: 35.655, lon: 139.795, name: '豐洲',
-               tenki: 'https://tenki.jp/forecast/3/16/4410/13108/10days.html' },
+               tenki: 'https://tenki.jp/forecast/3/16/4410/13108/10days.html',
+               jma: { pref: '130000', pop: '東京地方', temp: '東京', label: '氣象廳 東京' } },
     omiya:   { lat: 35.906, lon: 139.624, name: '大宮',
-               tenki: 'https://tenki.jp/forecast/3/14/4310/11103/10days.html' },
+               tenki: 'https://tenki.jp/forecast/3/14/4310/11103/10days.html',
+               jma: { pref: '110000', pop: '埼玉県', temp: '熊谷', label: '氣象廳 埼玉（熊谷）' } },
     maihama: { lat: 35.632, lon: 139.882, name: '舞濱',
-               tenki: 'https://tenki.jp/forecast/3/15/4510/12227/10days.html' },
+               tenki: 'https://tenki.jp/forecast/3/15/4510/12227/10days.html',
+               jma: { pref: '120000', pop: '千葉県', temp: '銚子', label: '氣象廳 千葉（銚子）' } },
   };
 
-  /* 哪一天看哪裡 */
   const DAY_PLACE = {
     '2026-09-20': 'toyosu',   // 抵達、LaLaport
     '2026-09-21': 'omiya',    // 鐵道博物館（內陸）
@@ -1930,8 +1934,8 @@ safe('天氣', function () {
     '2026-09-25': 'maihama',  // 返程
   };
 
-  /* WMO weather code → 中文與圖示 */
-  const CODE = [
+  /* WMO code（Open-Meteo）→ 中文與圖示 */
+  const WMO = [
     [[0], '☀️ 晴'], [[1], '🌤 晴時多雲'], [[2], '⛅ 多雲'], [[3], '☁️ 陰'],
     [[45, 48], '🌫 霧'],
     [[51, 53, 55, 56, 57], '🌦 毛毛雨'],
@@ -1940,21 +1944,26 @@ safe('天氣', function () {
     [[80, 81, 82], '🌦 陣雨'],
     [[95, 96, 99], '⛈ 雷雨'],
   ];
-  const label = c => (CODE.find(x => x[0].includes(c)) || [null, ''])[1];
-  const icon = c => label(c).split(' ')[0];
+  const wmoLabel = c => (WMO.find(x => x[0].includes(c)) || [null, ''])[1];
 
-  function fail() {
-    slots.forEach(s => {
-      const pl = PLACES[DAY_PLACE[s.dataset.date]] || PLACES.toyosu;
-      s.className = 'wx off';
-      s.href = pl.tenki;
-      s.textContent = `天氣預報需要網路，點這裡看 ${pl.name} 的 tenki.jp ↗`;
-    });
+  /* 氣象廳的天氣代碼是另一套（1xx 晴、2xx 曇、3xx 雨、4xx 雪） */
+  function jmaLabel(code) {
+    const n = parseInt(code, 10);
+    if (!n) return '';
+    if (n === 100) return '☀️ 晴';
+    if (n < 200) return '🌤 晴時多雲';
+    if (n === 200) return '☁️ 陰';
+    if (n === 201) return '⛅ 多雲時晴';
+    if (n < 300) return '🌦 陰有雨';
+    if (n < 400) return '🌧 雨';
+    if (n < 500) return '🌨 雪';
+    return '';
   }
 
-  /* 頁籤位置小：圖示＋降雨機率＋最高溫，一行擺完。
-     完整的溫度區間在頁內那一行。 */
-  function paintPill(date, w, code) {
+  const icon = s => (s || '').split(' ')[0];
+
+  /* ---- 畫面 ---- */
+  function paintPill(date, w) {
     const pill = document.querySelector(`.pill[data-date="${date}"]`);
     if (!pill) return;
     let span = pill.querySelector('.pwx');
@@ -1964,60 +1973,126 @@ safe('天氣', function () {
       pill.appendChild(span);
     }
     span.textContent = w
-      ? `${icon(code)} ${w.pop == null ? '–' : w.pop + '%'} ${Math.round(w.hi)}°`
+      ? `${icon(w.text)} ${w.pop == null ? '–' : w.pop + '%'}`
+        + (w.hi == null ? '' : ` ${Math.round(w.hi)}°`)
       : '';
   }
 
+  function render(data, srcNote) {
+    slots.forEach(s => {
+      const date = s.dataset.date;
+      const pl = PLACES[DAY_PLACE[date] || 'toyosu'];
+      const w = (data[DAY_PLACE[date] || 'toyosu'] || {})[date];
+      s.href = pl.tenki;
+      if (!w || (w.hi == null && w.pop == null)) {
+        s.className = 'wx off';
+        s.textContent = '這一天還沒有預報 ↗';
+        paintPill(date, null);
+        return;
+      }
+      s.className = 'wx';
+      s.innerHTML = `降雨 ${w.pop == null ? '–' : w.pop + '%'}`
+        + (w.lo != null && w.hi != null ? `　${Math.round(w.lo)}–${Math.round(w.hi)}°C` : '')
+        + (w.text ? `　${w.text}` : '')
+        + `<span class="more">　· ${srcNote(pl)} ↗</span>`;
+      paintPill(date, w);
+    });
+  }
+
+  function fail(err) {
+    const why = err && (err.name === 'AbortError' ? '連線逾時'
+      : (err.message || String(err)).slice(0, 40));
+    slots.forEach(s => {
+      const pl = PLACES[DAY_PLACE[s.dataset.date] || 'toyosu'];
+      s.className = 'wx off';
+      s.href = pl.tenki;
+      s.textContent = `天氣抓不到，點這裡看 ${pl.name} 的 tenki.jp ↗`;
+      paintPill(s.dataset.date, null);
+    });
+    const first = slots[0];
+    if (first && why) {
+      const note = document.createElement('div');
+      note.style.cssText = 'font-size:12px;color:var(--ink-soft);margin:4px 0 0';
+      note.textContent = `（兩個來源都失敗：${why}）`;
+      first.parentNode.appendChild(note);
+    }
+  }
+
+  /* ---- 來源 1：Open-Meteo ---- */
   const keys = Object.keys(PLACES);
   const dates = slots.map(s => s.dataset.date).sort();
-  const url = 'https://api.open-meteo.com/v1/forecast'
-    + `?latitude=${keys.map(k => PLACES[k].lat).join(',')}`
-    + `&longitude=${keys.map(k => PLACES[k].lon).join(',')}`
-    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
-    + '&timezone=Asia%2FTokyo'
-    + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
 
-  fetchTimeout(url + '&_t=' + Date.now(), 12000)
-    .then(r => r.ok ? r.json() : Promise.reject())
-    .then(res => {
-      const list = Array.isArray(res) ? res : [res];
-      /* 地點 → 日期 → 當天數值 */
+  function fromOpenMeteo() {
+    const url = 'https://api.open-meteo.com/v1/forecast'
+      + `?latitude=${keys.map(k => PLACES[k].lat).join(',')}`
+      + `&longitude=${keys.map(k => PLACES[k].lon).join(',')}`
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      + '&timezone=Asia%2FTokyo'
+      + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
+
+    return fetchTimeout(url + '&_t=' + Date.now(), 10000)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+      .then(res => {
+        const list = Array.isArray(res) ? res : [res];
+        const data = {};
+        keys.forEach((k, i) => {
+          const dl = list[i] && list[i].daily;
+          if (!dl || !dl.time) return;
+          data[k] = {};
+          dl.time.forEach((t, j) => {
+            data[k][t] = {
+              lo: dl.temperature_2m_min[j],
+              hi: dl.temperature_2m_max[j],
+              pop: dl.precipitation_probability_max[j],
+              text: wmoLabel(dl.weather_code[j]),
+            };
+          });
+        });
+        if (!Object.keys(data).length) return Promise.reject(new Error('空資料'));
+        return { data, note: pl => pl.name };
+      });
+  }
+
+  /* ---- 來源 2：氣象廳週間預報 ---- */
+  function fromJMA() {
+    const prefs = [...new Set(keys.map(k => PLACES[k].jma.pref))];
+    return Promise.all(prefs.map(pref =>
+      fetchTimeout(`https://www.jma.go.jp/bosai/forecast/data/forecast/${pref}.json?_t=${Date.now()}`, 10000)
+        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then(j => [pref, j])
+    )).then(pairs => {
+      const byPref = Object.fromEntries ? Object.fromEntries(pairs)
+        : pairs.reduce((o, [k, v]) => (o[k] = v, o), {});
       const data = {};
-      keys.forEach((k, i) => {
-        const dl = list[i] && list[i].daily;
-        if (!dl || !dl.time) return;
+      keys.forEach(k => {
+        const cfg = PLACES[k].jma;
+        const wk = (byPref[cfg.pref] || [])[1];
+        if (!wk || !wk.timeSeries) return;
+        const tsPop = wk.timeSeries[0], tsTmp = wk.timeSeries[1];
+        const aPop = (tsPop.areas || []).find(a => a.area.name === cfg.pop) || tsPop.areas[0];
+        const aTmp = (tsTmp.areas || []).find(a => a.area.name === cfg.temp) || tsTmp.areas[0];
         data[k] = {};
-        dl.time.forEach((t, j) => {
-          data[k][t] = {
-            lo: dl.temperature_2m_min[j],
-            hi: dl.temperature_2m_max[j],
-            pop: dl.precipitation_probability_max[j],
-            code: dl.weather_code[j],
+        tsPop.timeDefines.forEach((t, j) => {
+          const d = t.slice(0, 10);
+          const pop = aPop && aPop.pops[j];
+          const hi = aTmp && aTmp.tempsMax[j];
+          const lo = aTmp && aTmp.tempsMin[j];
+          data[k][d] = {
+            pop: pop === '' || pop == null ? null : +pop,
+            hi: hi === '' || hi == null ? null : +hi,
+            lo: lo === '' || lo == null ? null : +lo,
+            text: jmaLabel(aPop && aPop.weatherCodes[j]),
           };
         });
       });
-      if (!Object.keys(data).length) return fail();
+      if (!Object.keys(data).length) return Promise.reject(new Error('氣象廳空資料'));
+      return { data, note: pl => pl.jma.label };
+    });
+  }
 
-      slots.forEach(s => {
-        const date = s.dataset.date;
-        const key = DAY_PLACE[date] || 'toyosu';
-        const pl = PLACES[key];
-        const w = (data[key] || {})[date];
-        s.href = pl.tenki;
-        if (!w || w.hi === null) {
-          s.className = 'wx off';
-          s.textContent = '這一天還沒有預報（超出可預報範圍）↗';
-          paintPill(date, null);
-          return;
-        }
-        s.className = 'wx';
-        s.innerHTML = `降雨 ${w.pop == null ? '–' : w.pop + '%'}`
-          + `　${Math.round(w.lo)}–${Math.round(w.hi)}°C`
-          + `　${label(w.code)}`
-          + `<span class="more">　· ${pl.name} ↗</span>`;
-        paintPill(date, w, w.code);
-      });
-    })
+  fromOpenMeteo()
+    .catch(() => fromJMA())
+    .then(r => render(r.data, r.note))
     .catch(fail);
 });
 
