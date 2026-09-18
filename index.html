@@ -1827,7 +1827,7 @@ panels.addEventListener('click', e => {
 })();
 
 /* 深淺色切換：跟隨系統 → 淺色 → 深色，記在 localStorage，預設跟隨系統 */
-(function () {
+safe('深淺色', function () {
   const btn = document.getElementById('theme');
   const order = ['system', 'light', 'dark'];
   const label = { light: '☀️ 淺色', dark: '🌙 深色', system: '⚙️ 系統' };
@@ -1855,15 +1855,20 @@ panels.addEventListener('click', e => {
   };
 
   /* 選「系統」時，系統換色也要跟著換狀態列顏色 */
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  /* iOS Safari 14 以前的 MediaQueryList 只有 addListener，
+     直接呼叫 addEventListener 會 TypeError 並中斷後面所有程式。 */
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+  const onScheme = () => {
     if (document.documentElement.dataset.theme === 'system') apply('system');
-  });
-})();
+  };
+  if (mq.addEventListener) mq.addEventListener('change', onScheme);
+  else if (mq.addListener) mq.addListener(onScheme);
+});
 
 /* 重新整理：加入主畫面後沒有網址列，所以自己給一顆。
    做法很土：清掉快取 → 叫 SW 去檢查新版 → 重新載入。
    注意：沒網路時不清快取，否則會把離線內容弄掉。 */
-(function () {
+safe('重新整理', function () {
   const btn = document.getElementById('refresh');
   if (!btn) return;
   const hint = document.getElementById('refresh-hint');
@@ -1889,7 +1894,7 @@ panels.addEventListener('click', e => {
     u.searchParams.set('_r', Date.now().toString(36));
     location.replace(u.toString());
   };
-})();
+});
 
 
 /* ---------- 天氣預報 ----------
@@ -1901,7 +1906,7 @@ panels.addEventListener('click', e => {
 
    刻意不進 service worker 快取 —— 預報會變，快取就是放過期資訊。
    沒網路或抓失敗時只有這一行降級，不影響頁面其他部分。 */
-(function () {
+safe('天氣', function () {
   const slots = [...document.querySelectorAll('.wx')];
   if (!slots.length) return;
 
@@ -1972,7 +1977,7 @@ panels.addEventListener('click', e => {
     + '&timezone=Asia%2FTokyo'
     + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
 
-  fetch(url + '&_t=' + Date.now(), { cache: 'no-store' })
+  fetchTimeout(url + '&_t=' + Date.now(), 12000)
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(res => {
       const list = Array.isArray(res) ? res : [res];
@@ -2014,7 +2019,7 @@ panels.addEventListener('click', e => {
       });
     })
     .catch(fail);
-})();
+});
 
 /* ---------- 颱風資訊 ----------
    資料直接取自氣象庁的 bosai JSON（CORS 開放）：
@@ -2024,7 +2029,7 @@ panels.addEventListener('click', e => {
    這是官方但沒有正式文件的端點，格式可能改，所以整段包在 try 裡，
    解析不出來就退成「去官方頁看」的連結，絕不顯示可能錯的內容。
    同樣刻意不進 service worker 快取 —— 颱風資訊過期就是危險。 */
-(function () {
+safe('颱風', function () {
   const box = document.getElementById('typhoon');
   if (!box) return;
 
@@ -2063,7 +2068,7 @@ panels.addEventListener('click', e => {
     return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${iso.slice(11, 16)}`;
   }
 
-  fetch(JMA + 'data/targetTc.json?_t=' + Date.now(), { cache: 'no-store' })
+  fetchTimeout(JMA + 'data/targetTc.json?_t=' + Date.now(), 12000)
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(list => {
       if (!Array.isArray(list) || !list.length) {
@@ -2072,7 +2077,7 @@ panels.addEventListener('click', e => {
         return;
       }
       const tc = list[0].tropicalCyclone;
-      return fetch(`${JMA}data/${tc}/specifications.json?_t=${Date.now()}`, { cache: 'no-store' })
+      return fetchTimeout(`${JMA}data/${tc}/specifications.json?_t=${Date.now()}`, 12000)
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(spec => {
           const head = spec[0] || {};
@@ -2142,14 +2147,14 @@ panels.addEventListener('click', e => {
         });
     })
     .catch(offline);
-})();
+});
 
 /* ---------- 熊本熊卡指定商店清單 ----------
    資料抄自玉山官方活動頁（2026/9/18），四個分類共 23 組。
    寫死在這裡是刻意的：這是一份公告過的名單，不會每天變，
    而且離線時也要看得到（在店裡結帳前查最需要）。
    活動有變就重抄一次，順手更新上面的抓取日期。 */
-(function () {
+safe('熊本熊卡清單', function () {
   const box = document.getElementById('card-list');
   if (!box) return;
 
@@ -2202,7 +2207,33 @@ panels.addEventListener('click', e => {
     d.appendChild(body);
     box.appendChild(d);
   });
-})();
+});
+
+/* 每個模組各自獨立：其中一個爆掉不該讓其他模組跟著不執行。
+   （曾經發生過：舊 iOS Safari 的 matchMedia.addEventListener 拋錯，
+   導致後面的天氣、颱風、店家清單全部沒跑，天氣永遠停在「查詢中」。） */
+function safe(name, fn) {
+  try { fn(); } catch (e) {
+    if (window.console) console.warn('[' + name + '] 這個模組出錯，其他部分不受影響：', e);
+  }
+}
+
+/* 帶逾時的 fetch。手機網路卡住時 fetch 可能永遠不 resolve 也不 reject，
+   那會讓天氣／颱風永遠停在「查詢中」。逾時就當失敗處理。 */
+function fetchTimeout(url, ms) {
+  const opts = { cache: 'no-store' };
+  if (typeof AbortController === 'function') {
+    const ac = new AbortController();
+    opts.signal = ac.signal;
+    setTimeout(() => ac.abort(), ms);
+    return fetch(url, opts);
+  }
+  /* 沒有 AbortController 的舊瀏覽器：用 race 至少讓它會失敗 */
+  return Promise.race([
+    fetch(url, opts),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms)),
+  ]);
+}
 
 /* 回到頂端 */
 const topBtn = document.getElementById('top');
