@@ -1306,12 +1306,47 @@ const TRIP = [
 
   /* ============ 熊本熊卡日本回饋 ============ */
   {
-    id:"card", tab:"熊本熊卡", tabSub:"回饋",
-    title:"玉山熊本熊卡 日本回饋",
-    meta:"活動期間 2026/7/1 – 12/31 · 資料抓取於 2026/9/18 · 以官方頁為準",
+    id:"card", tab:"刷卡回饋", tabSub:"三張卡",
+    title:"日本刷哪張卡",
+    meta:"熊本熊卡 · 匯豐 Live+ · 玉山世界卡 · 資料查證於 2026/9/18",
     html:`
+      <div class="note-box warm">
+        <strong>⏰ 出發前一定要做的兩件登錄</strong>
+        <p><b>1. 熊本熊卡日本活動</b> —— 沒登錄就沒有加碼 6%。2025/12/31 前登錄過的，2026 年要重新登錄。</p>
+        <p><b>2. 玉山國外消費加碼（9/30 前登錄）</b> —— 全玉山信用卡都適用，<b>熊本熊卡也算</b>。
+        日韓累積消費 4–8 萬享 0.5%、8–16 萬 0.8%、<b>16 萬以上 1.5%</b>（e point，總上限 3,000 點）。
+        限<b>國外實體商店</b>，且須 10/15 前請款入帳。你們這趟很可能踩到 8 萬或 16 萬級距。</p>
+      </div>
+
       <div class="card">
-        <h3>💳 回饋結構</h3>
+        <h3>🎯 結帳時掏哪張（淨回饋，已扣 1.5% 國外手續費）</h3>
+        <table class="ht">
+          <tr><th>刷什麼</th><th>該用</th><th style="text-align:right">淨回饋</th></tr>
+          <tr class="near"><td><b>熊本熊指定商店</b><br><span class="park">Suica儲值、迪士尼門票、BicCamera、藥妝、LaLaport、無印、UNIQLO、一蘭、壽司郎、牛角…</span></td>
+              <td><b>熊本熊</b></td><td style="text-align:right"><b>+7%</b><br><span class="park">加活動最高 +8.5%</span></td></tr>
+          <tr><td><b>其他百貨・購物中心</b><br><span class="park">伊勢丹、高島屋、PARCO…</span></td>
+              <td><b>Live+</b></td><td style="text-align:right">+3.38%<br><span class="park">未設自動扣繳 +2.38%</span></td></tr>
+          <tr><td><b>非指定名單的連鎖餐廳・百貨美食街</b></td>
+              <td><b>Live+</b></td><td style="text-align:right">+4.38%<br><span class="park">未設自動扣繳 +3.38%</span></td></tr>
+          <tr><td><b>不確定的店</b><br><span class="park">個人小店、路邊、個人居酒屋</span></td>
+              <td><b>熊本熊</b></td><td style="text-align:right">+1%<br><span class="park">加活動最高 +2.5%</span></td></tr>
+          <tr><td>玉山世界卡</td><td>—</td><td style="text-align:right">−0.5%</td></tr>
+        </table>
+        <p style="margin-top:10px"><b>一句話：熊本熊當預設，Live+ 當例外。</b>反過來會虧 ——
+        Live+ 不符合加碼通路時只有 0.88%，扣掉 1.5% 手續費是<b>淨 −0.62%</b>。</p>
+      </div>
+
+      <div class="note-box warm">
+        <strong>⚠️ Live+ 最大的問題：你在櫃台無法確認</strong>
+        <p>加碼通路是用 <b>MCC Code</b>（商店類別代碼）判定，<b>從店名看不出來</b>，官方也沒有具名商家清單 ——
+        只有「百貨公司美食街、連鎖餐廳／咖啡廳、精選餐廳等」這種描述。刷了才知道有沒有中。</p>
+        <p>所以 Live+ 只在<b>明顯是連鎖店或百貨美食街</b>時才拿出來；有疑慮就刷熊本熊，2.5% 保底不會倒賠。</p>
+        <p><b>兩張都刷實體卡。</b>官方明文提醒綁定 Apple Pay／Google Pay／LINE Pay 等第三方支付
+        「以致回饋判斷與系統不符」，可能讓加碼失效。</p>
+      </div>
+
+      <div class="card">
+        <h3>💳 熊本熊卡 回饋結構</h3>
         <table class="ov">
           <tr><td class="d">指定商店</td><td><b>8.5%</b>（一般 2.5% ＋ 加碼 6%）<div class="h">加碼 6% 每歸戶每期回饋上限 <b>NT$500</b></div></td></tr>
           <tr><td class="d">一般消費</td><td><b>2.5%</b>　回饋無上限<div class="h">須為日本地區商店（收單行在日本）</div></td></tr>
@@ -1355,8 +1390,56 @@ const TRIP = [
         </ul>
       </div>
 
+      <details>
+        <summary><span class="n">🇬🇧</span>匯豐 Live+ 的完整結構</summary>
+        <div class="dbody">
+          <table class="ov">
+            <tr><td class="d">一般消費</td><td>0.88%　<b>無上限</b></td></tr>
+            <tr><td class="d">三大通路</td><td>加碼 3%（餐飲／購物／娛樂，<b>不限國內外</b>）<div class="h">三類共用每期上限 NT$888 → 約刷 29,600 元滿</div></td></tr>
+            <tr><td class="d">精選國家餐飲</td><td>再加碼 1%（含<b>日本</b>）<div class="h">每期上限 NT$200 → 約刷 20,000 元滿。<b>只給餐飲，購物與娛樂沒有</b></div></td></tr>
+            <tr><td class="d">自動扣繳</td><td>加碼 1%<div class="h">每期上限 NT$200。<b>要先設定才生效</b></div></td></tr>
+          </table>
+          <h4>所以在日本實際是</h4>
+          <ul>
+            <li><b>餐廳</b>（符合 MCC）：0.88＋3＋1＋1 = <b>5.88%</b></li>
+            <li><b>百貨・購物中心</b>：0.88＋3＋1 = <b>4.88%</b>（沒有國家餐飲那 1%）</li>
+            <li><b>樂園</b>（如迪士尼）：<b>4.88%</b>，但熊本熊的 8.5% 更好</li>
+            <li><b>不符合通路</b>：只有 0.88% → 扣手續費後<b>倒賠</b></li>
+          </ul>
+          <p style="font-size:13px">Live+ 的加碼上限比熊本熊寬鬆得多（888＋200＋200 vs 熊本熊的 500），
+          所以熊本熊加碼用完之後，Live+ 反而是比較能撐的那張。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary><span class="n">🌐</span>玉山世界卡 為什麼不適合日常刷</summary>
+        <div class="dbody">
+          <p>官方基本回饋（2026/1/1–12/31）：</p>
+          <ul>
+            <li><b>國外一般消費 1% 現金回饋，無上限</b> → 扣 1.5% 手續費後<b>淨 −0.5%</b></li>
+            <li>國內一般消費 0.2% 玉山 e point</li>
+          </ul>
+          <p>所以純看回饋，<b>世界卡在日本輸給熊本熊的 2.5%</b>。它的價值在別的地方：</p>
+          <ul>
+            <li><b>旅遊不便險</b> —— 這趟的機票就是刷這張，保障已經生效（詳見下方說明）</li>
+            <li><b>機場接送、機場貴賓室、快速通關</b>等禮遇</li>
+            <li><b>玉山環球賞</b>（Mastercard 海外消費回饋平台）—— <b>需另外註冊並啟用</b>，
+                日本有指定特店（例如東京華納兄弟哈利波特影城），有特定門檻與定額回饋</li>
+          </ul>
+          <p><b>建議：世界卡留著當保險與禮遇用，日常消費不要刷它。</b></p>
+        </div>
+      </details>
+
+      <div class="note-box">
+        <strong>🛡 保險提醒（機票刷世界卡）</strong>
+        <p>世界卡的旅遊不便險<b>不含行程取消／縮短</b>，而且<b>出發地（桃園）機場的延誤不賠</b>、
+        <b>轉降其他機場也明文排除</b>。真正有保障的是回程在成田延誤 4 小時以上（實支實付上限 NT$20,000）。</p>
+        <p>⚠️ <b>機票刷退後保險就消失</b> —— 颱風真的影響班機時，優先改票不要退票。</p>
+      </div>
+
       <p style="margin:14px 0 0">
-        <a class="map" target="_blank" rel="noopener" href="https://event.esunbank.com.tw/credit/kumamon-card/japan-discount.html">💳 官方活動頁（含登錄入口）</a>
+        <a class="map" target="_blank" rel="noopener" href="https://event.esunbank.com.tw/credit/travel/index.html">🌏 玉山國外消費加碼（9/30 前登錄）</a>
+        <a class="map" target="_blank" rel="noopener" href="https://event.esunbank.com.tw/credit/kumamon-card/japan-discount.html">💳 熊本熊卡活動頁（含登錄入口）</a>
         <a class="map" target="_blank" rel="noopener" href="https://event.esunbank.com.tw/credit/1120427bic/index.html">📷 BIC CAMERA 優惠券</a>
         <a class="map" target="_blank" rel="noopener" href="https://travel.rakuten.co.jp/">🏨 樂天訂房（日文版）</a>
       </p>

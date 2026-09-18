@@ -151,7 +151,7 @@ Service worker 需要 http（不能用 file://）才會註冊。
 還是抓得到（那是正確行為）。要測降級，把 `index.html` 複製一份、
 把兩個 API 網址換成不存在的主機再開。
 
-## 熊本熊卡日本回饋（頁籤）
+## 刷卡回饋（頁籤）
 
 商家清單與條款**抄自玉山官方活動頁**（`event.esunbank.com.tw/credit/kumamon-card/japan-discount.html`），
 寫死在 `index.html` 的 `CARD_SHOPS` 裡，四個分類共 23 組。
@@ -167,3 +167,23 @@ Service worker 需要 http（不能用 file://）才會註冊。
 抓取方式（官方頁結構）：四個分類在 `#japan-switcher` 的 `<li>` 裡，
 每組是 `p.p2.font-weight-bold.decoration-wavy`（小分類）＋
 `p.p2.font-weight-normal`（商家）。注意 class 屬性會跨行。
+
+### 三張卡的資料來源
+
+| 卡 | 來源 |
+|---|---|
+| 熊本熊卡 | `event.esunbank.com.tw/credit/kumamon-card/japan-discount.html` |
+| 玉山國外消費加碼 | `event.esunbank.com.tw/credit/travel/index.html`（全玉山卡適用，**含熊本熊卡**） |
+| 玉山世界卡 | `esunbank.com/zh-tw/personal/credit-card/intro/world-card/world` |
+| 匯豐 Live+ | `hsbc.com.tw/credit-cards/products/liveplus/` |
+| 國外交易服務費 | 兩家都是 1.5% |
+
+匯豐的「精選餐飲通路」是 **MCC Code 判定，沒有具名商家清單**，所以頁面上寫的是
+「櫃台無法確認」而不是給清單 —— 這點不要自作聰明補名單。
+
+玉山世界卡的旅遊不便險條款在 `esunbank.com/.../credit-card/travel-card/insurance.pdf`
+（19 頁）。macOS 沒有 pdftotext 時，可以用內建 PDFKit 抽文字：
+
+```bash
+osascript -l JavaScript tools/pdftxt.js <檔案> <起頁> <迄頁>
+```
