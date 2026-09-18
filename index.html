@@ -1302,6 +1302,68 @@ const TRIP = [
         要更新清單：repo 裡跑 <code>python3 tools/fetch-shops.py</code> 再跑 <code>python3 tools/build-sw.py</code>。
       </p>
     `
+  },
+
+  /* ============ 熊本熊卡日本回饋 ============ */
+  {
+    id:"card", tab:"熊本熊卡", tabSub:"回饋",
+    title:"玉山熊本熊卡 日本回饋",
+    meta:"活動期間 2026/7/1 – 12/31 · 資料抓取於 2026/9/18 · 以官方頁為準",
+    html:`
+      <div class="card">
+        <h3>💳 回饋結構</h3>
+        <table class="ov">
+          <tr><td class="d">指定商店</td><td><b>8.5%</b>（一般 2.5% ＋ 加碼 6%）<div class="h">加碼 6% 每歸戶每期回饋上限 <b>NT$500</b></div></td></tr>
+          <tr><td class="d">一般消費</td><td><b>2.5%</b>　回饋無上限<div class="h">須為日本地區商店（收單行在日本）</div></td></tr>
+          <tr><td class="d">手續費</td><td>國外交易服務費 <b>1.5%</b><div class="h">所以淨回饋約：指定商店 7%、一般消費 1%</div></td></tr>
+        </table>
+      </div>
+
+      <div class="note-box warm">
+        <strong>⚠️ 三個最容易踩的坑</strong>
+        <p><b>1. 沒登錄就沒有加碼 6%。</b>活動期間內只要登錄一次，但<b>2025/12/31 前登錄過的，2026 年要重新登錄</b>。出發前先確認。</p>
+        <p><b>2. 開在百貨、飯店、商場、車站、美食街裡的分店，可能不算。</b>官方原文：「若指定日本商店設立於百貨公司、飯店、酒店、旅館、賣場、商場、車站及美食街等，<b>以致帳單名稱無法判別為該商店，將不列入回饋計算</b>。」</p>
+        <p><b>3. 加碼 6% 的上限是每期 NT$500</b> —— 換算約刷到 NT$8,300 就到頂，超過的部分只有 2.5%。這趟花費一定會超過，心裡有數就好。</p>
+      </div>
+
+      <div class="note-box">
+        <strong>🎯 這趟行程用得到的</strong>
+        <p><b>幾乎確定有加碼：</b><br>
+        · <b>Suica / PASMO 儲值</b>（全程交通）<br>
+        · <b>東京迪士尼樂園</b>（門票）<br>
+        · <b>BicCamera</b>（有楽町店，官方另有專屬優惠券）<br>
+        · <b>松本清、唐吉軻德、大國藥妝</b>（藥妝）</p>
+        <p><b>看帳單名稱而定（在 LaLaport 裡面）：</b><br>
+        · <b>LaLaport購物園區、日本MITSUI</b> 本身就在名單上<br>
+        · 但 <b>無印良品</b>（豊洲1 SOUTH PORT 2F）、<b>UNIQLO</b>（NORTH PORT 2F）如果請款名稱帶的是 LaLaport 而不是店名，就看是算哪一邊<br>
+        · <b>美食街（マリーナキッチン）明文排除</b></p>
+        <p><b>不在名單上 → 只有 2.5%：</b><br>
+        · 你們的兩間飯店（三井花園豐洲、迪士尼樂園大飯店）<br>
+        · LaLaport 的 ウエルシア 藥妝<br>
+        · Bubba Gump、ALOHA TABLE 等餐廳</p>
+        <p style="font-size:13px">住宿加碼只認 <b>樂天旅遊、東橫INN、星野集團、Prince Hotel</b>；樂天訂房<b>必須用日文版網頁</b>，切成繁中就不符資格。</p>
+      </div>
+
+      <div id="card-list"></div>
+
+      <div class="note-box">
+        <strong>其他排除</strong>
+        <ul>
+          <li>綁定玉山 Wallet 在日本用 <b>PayPay</b> 消費 → <b>2.5% 與 6% 都不給</b></li>
+          <li>用 Agoda、Booking.com、Trip.com 訂日本飯店，若請款商店在日本以外 → 不符合 2.5%</li>
+          <li>回饋直接折抵當期台幣帳單，不可退回或兌現；交易取消會倒扣</li>
+        </ul>
+      </div>
+
+      <p style="margin:14px 0 0">
+        <a class="map" target="_blank" rel="noopener" href="https://event.esunbank.com.tw/credit/kumamon-card/japan-discount.html">💳 官方活動頁（含登錄入口）</a>
+        <a class="map" target="_blank" rel="noopener" href="https://event.esunbank.com.tw/credit/1120427bic/index.html">📷 BIC CAMERA 優惠券</a>
+        <a class="map" target="_blank" rel="noopener" href="https://travel.rakuten.co.jp/">🏨 樂天訂房（日文版）</a>
+      </p>
+      <p style="font-size:13px;color:var(--ink-soft);margin:10px 0 0">
+        商家清單與條款抓取於 2026/9/18。活動內容玉山保留變更權利，出發前再看一次官方頁。
+      </p>
+    `
   }
 ];
 
@@ -1997,6 +2059,66 @@ panels.addEventListener('click', e => {
         });
     })
     .catch(offline);
+})();
+
+/* ---------- 熊本熊卡指定商店清單 ----------
+   資料抄自玉山官方活動頁（2026/9/18），四個分類共 23 組。
+   寫死在這裡是刻意的：這是一份公告過的名單，不會每天變，
+   而且離線時也要看得到（在店裡結帳前查最需要）。
+   活動有變就重抄一次，順手更新上面的抓取日期。 */
+(function () {
+  const box = document.getElementById('card-list');
+  if (!box) return;
+
+  const CARD_SHOPS = [
+    ['🚃 交通・住宿', [
+      ['交通IC卡儲值', 'SUICA、PASMO、ICOCA'],
+      ['自駕租車', 'TOYOTA Rent a Car、Times Car Rental、NIPPON RENT-A-CAR、OTS租車、ORIX租車、Budget租車'],
+      ['鐵路購票', 'JR鐵路公司'],
+      ['航空訂票', '日本航空'],
+      ['住宿預訂', '樂天旅遊、東橫INN、星野集團、Prince Hotel'],
+    ]],
+    ['🎡 樂園・購票', [
+      ['東京地區', '東京迪士尼樂園、東京華納兄弟哈利波特影城'],
+      ['關西地區', '日本環球影城'],
+      ['九州地區', '豪斯登堡、九州非洲獅樂園'],
+      ['中部地區', '名古屋樂高樂園'],
+      ['其他特色樂園', '吉伊卡哇樂園'],
+    ]],
+    ['🍜 美食・探店', [
+      ['燒肉', '勝烈亭、敘敘苑、牛角、力丸燒肉、六歌仙燒肉'],
+      ['漢堡', 'shake shack'],
+      ['咖啡廳', 'DOUTOR Coffee、Fuglen'],
+      ['居酒屋', '鳥貴族'],
+      ['拉麵', '一蘭拉麵'],
+      ['平價快餐', '松屋、SUKIYA'],
+      ['壽司', '壽司郎、藏壽司'],
+      ['壽喜燒', '人形町今半'],
+    ]],
+    ['🛍 購物・血拼', [
+      ['家電', 'BicCamera、Yodobashi'],
+      ['藥妝', '松本清、唐吉軻德、大國藥妝'],
+      ['生活雜貨', '無印良品'],
+      ['購物商城', '日本MITSUI、LaLaport購物園區'],
+      ['服飾品牌', 'UNIQLO、GU、Montbell、Alpen'],
+    ]],
+  ];
+
+  CARD_SHOPS.forEach(([title, rows]) => {
+    const d = document.createElement('details');
+    const s = document.createElement('summary');
+    s.innerHTML = `<span class="n">${title.split(' ')[0]}</span>${title.split(' ')[1]}`
+      + `<span style="font-weight:400;opacity:.6;font-size:13px">　${rows.length} 組</span>`;
+    d.appendChild(s);
+
+    const body = document.createElement('div');
+    body.className = 'dbody';
+    body.innerHTML = '<table class="ov">' + rows.map(([sub, shops]) =>
+      `<tr><td class="d" style="white-space:nowrap;vertical-align:top">${sub}</td><td>${shops}</td></tr>`
+    ).join('') + '</table>';
+    d.appendChild(body);
+    box.appendChild(d);
+  });
 })();
 
 /* 回到頂端 */

@@ -150,3 +150,20 @@ Service worker 需要 http（不能用 file://）才會註冊。
 只關掉本機 `python3 -m http.server` **不算離線** —— 外網還通，天氣與颱風
 還是抓得到（那是正確行為）。要測降級，把 `index.html` 複製一份、
 把兩個 API 網址換成不存在的主機再開。
+
+## 熊本熊卡日本回饋（頁籤）
+
+商家清單與條款**抄自玉山官方活動頁**（`event.esunbank.com.tw/credit/kumamon-card/japan-discount.html`），
+寫死在 `index.html` 的 `CARD_SHOPS` 裡，四個分類共 23 組。
+
+刻意寫死而不即時抓的原因：
+
+- 那是公告過的名單，不會每天變
+- **離線也要看得到** —— 在店裡結帳前查最需要
+- 官方頁是靜態 HTML 但用 UIkit switcher 分頁，直接 fetch 會受 CORS 限制
+
+活動有變就重抄一次，並同時更新 panel meta 裡的「資料抓取於」日期。
+
+抓取方式（官方頁結構）：四個分類在 `#japan-switcher` 的 `<li>` 裡，
+每組是 `p.p2.font-weight-bold.decoration-wavy`（小分類）＋
+`p.p2.font-weight-normal`（商家）。注意 class 屬性會跨行。
