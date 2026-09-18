@@ -1898,69 +1898,117 @@ safe('重新整理', function () {
 
 
 /* ---------- 天氣預報 ----------
-   兩個來源，依序嘗試：
-
-   1. Open-Meteo  免 key、座標級、16 天。細但有被封鎖的風險
-      （回報過 iOS 上 api.open-meteo.com 不通而 jma.go.jp 通，
-      推測是內容封鎖器或 DNS 過濾）
-   2. 氣象廳 bosai 週間預報  區域級、7 天。粗一點但同一個網域
-      已證明在使用者手機上可用，而且是日本官方
-
-   兩個都失敗才降級成 tenki.jp 連結，並把錯誤原因寫在畫面上方便回報。
+   單一來源：氣象廳 bosai 預報 JSON（詳見模組內的說明）。
+   抓不到就降級成 tenki.jp 連結，並把錯誤原因寫在畫面上方便回報。
    刻意不進 service worker 快取 —— 預報會變，快取就是放過期資訊。 */
 safe('天氣', function () {
   const slots = [...document.querySelectorAll('.wx')];
   if (!slots.length) return;
 
-  /* 每個地點：Open-Meteo 座標、tenki.jp 連結、氣象廳的對應區域 */
+  /* 只用氣象廳（bosai 預報 JSON：CORS 開放、走 CDN、日本官方）。
+     曾經並用 Open-Meteo 拿「座標級」資料，後來對照發現：
+     - 官方週間預報裡東京／埼玉／千葉三縣的降雨機率是同一組數字，
+       Open-Meteo 給的地點差異是模式內插出來的，五天外沒有實際意義
+     - 兩邊真的不一樣時（迪士尼那幾天 16–29% vs 40%）該信官方的
+     - Open-Meteo 是德國一台單機、沒有 CDN，慢又不穩
+     所以拿掉，只留權威、快、簡單的那一個。
+
+     兩份預報合併：
+     - 週間預報 j[1]：7 天，但「今天」那格一定是空字串
+     - 3 天預報 j[0]：今天／明天／後天，降雨機率 6 小時一格、
+       溫度有更近的測站（さいたま）—— 有它就用它蓋掉週間的 */
   const PLACES = {
-    toyosu:  { lat: 35.655, lon: 139.795, name: '豐洲',
-               tenki: 'https://tenki.jp/forecast/3/16/4410/13108/10days.html',
-               jma: { pref: '130000', pop: '東京地方', temp: '東京', label: '氣象廳 東京' } },
-    omiya:   { lat: 35.906, lon: 139.624, name: '大宮',
-               tenki: 'https://tenki.jp/forecast/3/14/4310/11103/10days.html',
-               jma: { pref: '110000', pop: '埼玉県', temp: '熊谷', label: '氣象廳 埼玉（熊谷）' } },
-    maihama: { lat: 35.632, lon: 139.882, name: '舞濱',
-               tenki: 'https://tenki.jp/forecast/3/15/4510/12227/10days.html',
-               jma: { pref: '120000', pop: '千葉県', temp: '銚子', label: '氣象廳 千葉（銚子）' } },
+    tokyo:   { pref: '130000', area3: '東京地方', areaW: '東京地方',
+               temp3: '東京', tempW: '東京', label: '氣象廳 東京' },
+    saitama: { pref: '110000', area3: '南部', areaW: '埼玉県',
+               temp3: 'さいたま', tempW: '熊谷', label: '氣象廳 埼玉' },
   };
-
-  const DAY_PLACE = {
-    '2026-09-20': 'toyosu',   // 抵達、LaLaport
-    '2026-09-21': 'omiya',    // 鐵道博物館（內陸）
-    '2026-09-22': 'toyosu',   // 街區散步（都內）
-    '2026-09-23': 'maihama',  // 迪士尼海洋
-    '2026-09-24': 'maihama',  // 迪士尼樂園
-    '2026-09-25': 'maihama',  // 返程
+  /* 每一天看哪個區域；tenki.jp 連結保留當「看更細」的出口。
+     舞濱離東京車站 15 km，官方週間預報千葉縣只有銚子測站（90 km 外的海角），
+     所以舞濱那幾天直接用東京。 */
+  const T_TOYOSU  = 'https://tenki.jp/forecast/3/16/4410/13108/10days.html';
+  const T_OMIYA   = 'https://tenki.jp/forecast/3/14/4310/11103/10days.html';
+  const T_MAIHAMA = 'https://tenki.jp/forecast/3/15/4510/12227/10days.html';
+  const DAYS = {
+    '2026-09-20': { p: 'tokyo',   name: '豐洲', tenki: T_TOYOSU },
+    '2026-09-21': { p: 'saitama', name: '大宮', tenki: T_OMIYA },
+    '2026-09-22': { p: 'tokyo',   name: '豐洲', tenki: T_TOYOSU },
+    '2026-09-23': { p: 'tokyo',   name: '舞濱', tenki: T_MAIHAMA },
+    '2026-09-24': { p: 'tokyo',   name: '舞濱', tenki: T_MAIHAMA },
+    '2026-09-25': { p: 'tokyo',   name: '舞濱', tenki: T_MAIHAMA },
   };
+  const DAY_DEFAULT = { p: 'tokyo', name: '東京', tenki: T_TOYOSU };
 
-  /* WMO code（Open-Meteo）→ 中文與圖示 */
-  const WMO = [
-    [[0], '☀️ 晴'], [[1], '🌤 晴時多雲'], [[2], '⛅ 多雲'], [[3], '☁️ 陰'],
-    [[45, 48], '🌫 霧'],
-    [[51, 53, 55, 56, 57], '🌦 毛毛雨'],
-    [[61, 63, 65, 66, 67], '🌧 雨'],
-    [[71, 73, 75, 77, 85, 86], '🌨 雪'],
-    [[80, 81, 82], '🌦 陣雨'],
-    [[95, 96, 99], '⛈ 雷雨'],
-  ];
-  const wmoLabel = c => (WMO.find(x => x[0].includes(c)) || [null, ''])[1];
-
-  /* 氣象廳的天氣代碼是另一套（1xx 晴、2xx 曇、3xx 雨、4xx 雪） */
+  /* 氣象廳天氣代碼：1xx 晴系、2xx 曇系、3xx 雨、4xx 雪。
+     只挑九月東京用得到的：雪的變體（104、204 之類）會被歸到「有雨」，可接受。 */
   function jmaLabel(code) {
     const n = parseInt(code, 10);
     if (!n) return '';
     if (n === 100) return '☀️ 晴';
-    if (n < 200) return '🌤 晴時多雲';
+    if (n < 200) return [101, 110, 111].includes(n) ? '🌤 晴時多雲' : '🌦 晴有雨';
     if (n === 200) return '☁️ 陰';
-    if (n === 201) return '⛅ 多雲時晴';
-    if (n < 300) return '🌦 陰有雨';
+    if (n < 300) return [201, 210, 211].includes(n) ? '⛅ 陰轉晴' : '🌦 陰有雨';
     if (n < 400) return '🌧 雨';
     if (n < 500) return '🌨 雪';
     return '';
   }
-
   const icon = s => (s || '').split(' ')[0];
+
+  /* ---- 解析 ---- */
+  const find = (ts, name) => (ts.areas || []).find(a => a.area.name === name) || ts.areas[0];
+  const num = v => (v === '' || v == null) ? null : +v;
+  const day = t => t.slice(0, 10);
+
+  function parsePlace(cfg, j) {
+    const out = {};
+    const get = d => (out[d] = out[d] || { pop: null, hi: null, lo: null, text: '', rel: '' });
+    if (!j || !j[1] || !j[1].timeSeries) return out;
+
+    // 週間預報
+    const wP = j[1].timeSeries[0], wT = j[1].timeSeries[1];
+    const aP = find(wP, cfg.areaW), aT = wT && find(wT, cfg.tempW);
+    wP.timeDefines.forEach((t, i) => {
+      const o = get(day(t));
+      o.pop = num(aP.pops[i]);
+      o.text = jmaLabel(aP.weatherCodes[i]);
+      o.rel = (aP.reliabilities || [])[i] || '';
+      if (aT) { o.hi = num(aT.tempsMax[i]); o.lo = num(aT.tempsMin[i]); }
+    });
+
+    // 3 天預報蓋上去（比週間細、比週間近）
+    const s = j[0];
+    if (s && s.timeSeries) {
+      const [sW, sP, sT] = s.timeSeries;
+      if (sW) {
+        const a = find(sW, cfg.area3);
+        sW.timeDefines.forEach((t, i) => {
+          const l = jmaLabel(a.weatherCodes[i]);
+          if (l) get(day(t)).text = l;
+        });
+      }
+      if (sP) {
+        const a = find(sP, cfg.area3);
+        const mx = {};
+        sP.timeDefines.forEach((t, i) => {
+          const v = num(a.pops[i]);
+          if (v == null) return;
+          const d = day(t);
+          mx[d] = mx[d] == null ? v : Math.max(mx[d], v);
+        });
+        Object.keys(mx).forEach(d => { get(d).pop = mx[d]; });
+      }
+      if (sT) {
+        const a = find(sT, cfg.temp3);
+        sT.timeDefines.forEach((t, i) => {
+          const v = num(a.temps[i]);
+          if (v == null) return;
+          const o = get(day(t));
+          if (t.slice(11, 13) === '00') o.lo = v; else o.hi = v;   // 00:00 最低、09:00 最高
+        });
+      }
+    }
+    return out;
+  }
 
   /* ---- 畫面 ---- */
   function paintPill(date, w) {
@@ -1978,13 +2026,14 @@ safe('天氣', function () {
       : '';
   }
 
-  function render(data, srcNote) {
+  function render(data) {
     slots.forEach(s => {
       const date = s.dataset.date;
-      const pl = PLACES[DAY_PLACE[date] || 'toyosu'];
-      const w = (data[DAY_PLACE[date] || 'toyosu'] || {})[date];
-      s.href = pl.tenki;
-      if (!w || (w.hi == null && w.pop == null)) {
+      const d = DAYS[date] || DAY_DEFAULT;
+      const cfg = PLACES[d.p];
+      const w = (data[d.p] || {})[date];
+      s.href = d.tenki;
+      if (!w || (w.pop == null && w.hi == null)) {
         s.className = 'wx off';
         s.textContent = '這一天還沒有預報 ↗';
         paintPill(date, null);
@@ -1992,9 +2041,10 @@ safe('天氣', function () {
       }
       s.className = 'wx';
       s.innerHTML = `降雨 ${w.pop == null ? '–' : w.pop + '%'}`
-        + (w.lo != null && w.hi != null ? `　${Math.round(w.lo)}–${Math.round(w.hi)}°C` : '')
+        + (w.lo != null && w.hi != null ? `　${w.lo}–${w.hi}°C`
+           : (w.hi != null ? `　最高 ${w.hi}°C` : ''))
         + (w.text ? `　${w.text}` : '')
-        + `<span class="more">　· ${srcNote(pl)} ↗</span>`;
+        + `<span class="more">　· ${cfg.label}${w.rel ? ' · 信賴度 ' + w.rel : ''} ↗</span>`;
       paintPill(date, w);
     });
   }
@@ -2003,132 +2053,37 @@ safe('天氣', function () {
     const why = err && (err.name === 'AbortError' ? '連線逾時'
       : (err.message || String(err)).slice(0, 40));
     slots.forEach(s => {
-      const pl = PLACES[DAY_PLACE[s.dataset.date] || 'toyosu'];
+      const d = DAYS[s.dataset.date] || DAY_DEFAULT;
       s.className = 'wx off';
-      s.href = pl.tenki;
-      s.textContent = `天氣抓不到，點這裡看 ${pl.name} 的 tenki.jp ↗`;
+      s.href = d.tenki;
+      s.textContent = `天氣抓不到，點這裡看 ${d.name} 的 tenki.jp ↗`;
       paintPill(s.dataset.date, null);
     });
     const first = slots[0];
     if (first && why) {
       const note = document.createElement('div');
       note.style.cssText = 'font-size:12px;color:var(--ink-soft);margin:4px 0 0';
-      note.textContent = `（兩個來源都失敗：${why}）`;
+      note.textContent = `（氣象廳抓不到：${why}）`;
       first.parentNode.appendChild(note);
     }
   }
 
-  /* ---- 來源 1：Open-Meteo ---- */
-  const keys = Object.keys(PLACES);
-  const dates = slots.map(s => s.dataset.date).sort();
-
-  function fromOpenMeteo() {
-    const url = 'https://api.open-meteo.com/v1/forecast'
-      + `?latitude=${keys.map(k => PLACES[k].lat).join(',')}`
-      + `&longitude=${keys.map(k => PLACES[k].lon).join(',')}`
-      + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
-      + '&timezone=Asia%2FTokyo'
-      + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
-
-    // 給它 20 秒：它已經不擋第一次上色（氣象廳會先畫），
-    // 慢慢回來也還來得及把資料換細，不必急著放棄。
-    return fetchTimeout(url + '&_t=' + Date.now(), 20000)
+  /* ---- 抓 ----
+     兩個縣同時抓。走 CDN、實測 0.04 秒，8 秒還沒回來就是真的不通了。 */
+  const prefs = [...new Set(Object.keys(PLACES).map(k => PLACES[k].pref))];
+  Promise.all(prefs.map(pref =>
+    fetchTimeout(`https://www.jma.go.jp/bosai/forecast/data/forecast/${pref}.json?_t=${Date.now()}`, 8000)
       .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
-      .then(res => {
-        const list = Array.isArray(res) ? res : [res];
-        const data = {};
-        keys.forEach((k, i) => {
-          const dl = list[i] && list[i].daily;
-          if (!dl || !dl.time) return;
-          data[k] = {};
-          dl.time.forEach((t, j) => {
-            data[k][t] = {
-              lo: dl.temperature_2m_min[j],
-              hi: dl.temperature_2m_max[j],
-              pop: dl.precipitation_probability_max[j],
-              text: wmoLabel(dl.weather_code[j]),
-            };
-          });
-        });
-        if (!Object.keys(data).length) return Promise.reject(new Error('空資料'));
-        return { data, note: pl => pl.name };
-      });
-  }
-
-  /* ---- 來源 2：氣象廳週間預報 ---- */
-  function fromJMA() {
-    const prefs = [...new Set(keys.map(k => PLACES[k].jma.pref))];
-    return Promise.all(prefs.map(pref =>
-      // 這個走 CDN、實測 0.04 秒，8 秒還沒回來就是真的不通了
-      fetchTimeout(`https://www.jma.go.jp/bosai/forecast/data/forecast/${pref}.json?_t=${Date.now()}`, 8000)
-        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
-        .then(j => [pref, j])
-    )).then(pairs => {
-      const byPref = Object.fromEntries ? Object.fromEntries(pairs)
-        : pairs.reduce((o, [k, v]) => (o[k] = v, o), {});
-      const data = {};
-      keys.forEach(k => {
-        const cfg = PLACES[k].jma;
-        const wk = (byPref[cfg.pref] || [])[1];
-        if (!wk || !wk.timeSeries) return;
-        const tsPop = wk.timeSeries[0], tsTmp = wk.timeSeries[1];
-        const aPop = (tsPop.areas || []).find(a => a.area.name === cfg.pop) || tsPop.areas[0];
-        const aTmp = (tsTmp.areas || []).find(a => a.area.name === cfg.temp) || tsTmp.areas[0];
-        data[k] = {};
-        tsPop.timeDefines.forEach((t, j) => {
-          const d = t.slice(0, 10);
-          const pop = aPop && aPop.pops[j];
-          const hi = aTmp && aTmp.tempsMax[j];
-          const lo = aTmp && aTmp.tempsMin[j];
-          data[k][d] = {
-            pop: pop === '' || pop == null ? null : +pop,
-            hi: hi === '' || hi == null ? null : +hi,
-            lo: lo === '' || lo == null ? null : +lo,
-            text: jmaLabel(aPop && aPop.weatherCodes[j]),
-          };
-        });
-      });
-      if (!Object.keys(data).length) return Promise.reject(new Error('氣象廳空資料'));
-      return { data, note: pl => pl.jma.label };
-    });
-  }
-
-  /* ---- 兩邊同時發，先到先畫 ----
-     實測（固網）：api.open-meteo.com 只有一個 IP、機器在德國，
-     光 TLS 握手就 0.7 秒、整趟約 1.0 秒；www.jma.go.jp 掛在 CDN 上，
-     四個 IP、整趟 0.037 秒 —— 差 27 倍。
-
-     舊寫法是「先等 Open-Meteo，失敗才換氣象廳」，於是那台德國單機一慢
-     或一忙，畫面就得等滿逾時才有東西，手機上就是一直「查詢中」。
-     （回報過同一支手機下午看得到、晚上看不到 —— 那是遠端那台機器的狀態，
-     不是裝置問題。）
-
-     改成同時發兩個：氣象廳先回來就先畫（區域級，粗但幾乎立刻），
-     Open-Meteo 回來了再換成座標級的細資料。畫面上的來源標示會跟著變，
-     所以數字小幅跳動是「換成更細的來源」，不是壞掉。
-     兩個都失敗才降級成 tenki.jp 連結。 */
-  let fine = false;      // 已經畫上 Open-Meteo 的座標級資料
-  let painted = false;   // 畫面上已經有任何資料
-  let firstErr = null;
-
-  const om = fromOpenMeteo();
-  const jm = fromJMA();
-
-  om.then(
-    r => { fine = true; painted = true; render(r.data, r.note); },
-    e => { firstErr = firstErr || e; }
-  );
-
-  jm.then(
-    r => { if (!fine) { painted = true; render(r.data, r.note); } },
-    e => { firstErr = firstErr || e; }
-  );
-
-  // 兩個都跑完了還是什麼都沒畫出來，才算真的失敗
-  Promise.all([om.catch(() => null), jm.catch(() => null)])
-    .then(() => { if (!painted) fail(firstErr); });
+      .then(j => [pref, j])
+  )).then(pairs => {
+    const byPref = {};
+    pairs.forEach(([k, v]) => { byPref[k] = v; });
+    const data = {};
+    Object.keys(PLACES).forEach(k => { data[k] = parsePlace(PLACES[k], byPref[PLACES[k].pref]); });
+    if (!Object.keys(data).some(k => Object.keys(data[k]).length)) throw new Error('空資料');
+    render(data);
+  }).catch(fail);
 });
-
 /* ---------- 颱風資訊 ----------
    資料直接取自氣象庁的 bosai JSON（CORS 開放）：
      targetTc.json               → 目前有哪些熱帶氣旋
