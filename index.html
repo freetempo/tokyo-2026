@@ -2030,7 +2030,9 @@ safe('天氣', function () {
       + '&timezone=Asia%2FTokyo'
       + `&start_date=${dates[0]}&end_date=${dates[dates.length - 1]}`;
 
-    return fetchTimeout(url + '&_t=' + Date.now(), 10000)
+    // 給它 20 秒：它已經不擋第一次上色（氣象廳會先畫），
+    // 慢慢回來也還來得及把資料換細，不必急著放棄。
+    return fetchTimeout(url + '&_t=' + Date.now(), 20000)
       .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
       .then(res => {
         const list = Array.isArray(res) ? res : [res];
@@ -2057,7 +2059,8 @@ safe('天氣', function () {
   function fromJMA() {
     const prefs = [...new Set(keys.map(k => PLACES[k].jma.pref))];
     return Promise.all(prefs.map(pref =>
-      fetchTimeout(`https://www.jma.go.jp/bosai/forecast/data/forecast/${pref}.json?_t=${Date.now()}`, 10000)
+      // 這個走 CDN、實測 0.04 秒，8 秒還沒回來就是真的不通了
+      fetchTimeout(`https://www.jma.go.jp/bosai/forecast/data/forecast/${pref}.json?_t=${Date.now()}`, 8000)
         .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
         .then(j => [pref, j])
     )).then(pairs => {
@@ -2090,10 +2093,40 @@ safe('天氣', function () {
     });
   }
 
-  fromOpenMeteo()
-    .catch(() => fromJMA())
-    .then(r => render(r.data, r.note))
-    .catch(fail);
+  /* ---- 兩邊同時發，先到先畫 ----
+     實測（固網）：api.open-meteo.com 只有一個 IP、機器在德國，
+     光 TLS 握手就 0.7 秒、整趟約 1.0 秒；www.jma.go.jp 掛在 CDN 上，
+     四個 IP、整趟 0.037 秒 —— 差 27 倍。
+
+     舊寫法是「先等 Open-Meteo，失敗才換氣象廳」，於是那台德國單機一慢
+     或一忙，畫面就得等滿逾時才有東西，手機上就是一直「查詢中」。
+     （回報過同一支手機下午看得到、晚上看不到 —— 那是遠端那台機器的狀態，
+     不是裝置問題。）
+
+     改成同時發兩個：氣象廳先回來就先畫（區域級，粗但幾乎立刻），
+     Open-Meteo 回來了再換成座標級的細資料。畫面上的來源標示會跟著變，
+     所以數字小幅跳動是「換成更細的來源」，不是壞掉。
+     兩個都失敗才降級成 tenki.jp 連結。 */
+  let fine = false;      // 已經畫上 Open-Meteo 的座標級資料
+  let painted = false;   // 畫面上已經有任何資料
+  let firstErr = null;
+
+  const om = fromOpenMeteo();
+  const jm = fromJMA();
+
+  om.then(
+    r => { fine = true; painted = true; render(r.data, r.note); },
+    e => { firstErr = firstErr || e; }
+  );
+
+  jm.then(
+    r => { if (!fine) { painted = true; render(r.data, r.note); } },
+    e => { firstErr = firstErr || e; }
+  );
+
+  // 兩個都跑完了還是什麼都沒畫出來，才算真的失敗
+  Promise.all([om.catch(() => null), jm.catch(() => null)])
+    .then(() => { if (!painted) fail(firstErr); });
 });
 
 /* ---------- 颱風資訊 ----------
