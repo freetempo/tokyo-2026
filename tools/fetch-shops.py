@@ -158,6 +158,14 @@ ALIASES = {
 EN = {
     "アーバンドック ららぽーと豊洲": "Urban Dock LaLaport TOYOSU",
     "アカチャンホンポ": "Akachan Honpo",
+    # 以下五家是 2026/9/19 補的：使用者搜 olympia 搜不到 —— 片假名轉羅馬字是 orinpia，
+    # 跟官方拼法差太多。全部從官方店鋪頁的官網連結確認過（olympiashop.co.jp、
+    # artemisdiana.jp、donq.co.jp/family/minione、ilio.jp；QB HOUSE 是連鎖官方寫法）。
+    "オリンピア": "OLYMPIA",
+    "アルテミス by ダイアナ": "ARTEMIS by DIANA",
+    "ミニワン": "MINI ONE",
+    "イリオ": "ilio",
+    "QBハウス": "QB HOUSE",
     "アフタヌーンティー・リビング": "Afternoon Tea LIVING",
     "アプレ レ クール": "apres les cours",
     "アミュージアム": "AMUSIUM",
